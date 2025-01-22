@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.mob_dev_portfolio"
-        minSdk 26
+        minSdk 29
         targetSdk 33
         versionCode 1
         versionName "1.0"
