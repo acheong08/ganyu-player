@@ -1,5 +1,6 @@
 package dev.duti.ganyu
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,9 +28,10 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
         enableEdgeToEdge()
         permissionRequester = PermissionRequester(this)
         permissionRequester.requestPermissions(
-                listOf(android.Manifest.permission.READ_CONTACTS),
+                listOf(android.Manifest.permission.READ_CONTACTS, android.Manifest.permission.POST_NOTIFICATIONS),
                 this
         )
+        startForegroundService(Intent(this, MainService::class.java))
     }
     override fun onAllPermissionsGranted() {
         val device = Device().apply { init(this@MainActivity) }
