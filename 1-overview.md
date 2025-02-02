@@ -11,6 +11,6 @@ For example:
 - [Syncthing infrastructure as C2 transport](https://github.com/acheong08/syndicate) allows communication without exposing attacker information such as IP address and removing the requirement for a public server.
 - [Location surveillence via Apple's CoreLocation infrastructure](https://github.com/acheong08/apple-corelocation-experiments) allows victims to be tracked even after uninstalling the spyware through their routers and hotspots.
 
-By nature of the data collection involved with spyware, it expose me to a wide range of Android APIs, making it a good candidate for learning. Furthermore, I hope to spur protocols such as syncthing to re-evaluate their relay infrastructure to limit unintentional exposure to malicious traffic and for Apple to lock down their location service infrastructure to prevent abuse.
+This project has good educational value due to the breath of Android APIs that will be used by nature of spyware. Furthermore, I hope to spur protocols such as syncthing to re-evaluate their relay infrastructure to limit unintentional exposure to malicious traffic and for Apple to lock down their location service infrastructure to prevent abuse.
 
 This application will mostly be useful as a base for researching potential malware behavior and detection avenues. However, it could also be useful to law enforcement and governments which could adapt strategies showcased in their own systems.
