@@ -9,7 +9,7 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.8.0"
 composeBom = "2024.04.01"
 roomCommon = "2.6.1"
-gson = "2.8.5"
+roomKtx = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -27,7 +27,10 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
-com-google-code-gson = { group = "com.google.code", name = "gson", version.ref = "gson" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
+androidx-room-runtime = {group = "androidx.room", name = "room-runtime", version.ref = "roomKtx"}
+androidx-room-compiler = {group = "androidx.room", name = "room-compiler", version.ref = "roomKtx"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

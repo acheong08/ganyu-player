@@ -35,13 +35,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.duti.ganyu.R
-import dev.duti.ganyu.data.Album
-import dev.duti.ganyu.data.Artist
-import dev.duti.ganyu.data.Song
+import dev.duti.ganyu.data.SongWithDetails
 
 
 @Composable
-fun SongItem(song: Song, onItemClick: () -> Unit) {
+fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -78,7 +76,7 @@ fun SongItem(song: Song, onItemClick: () -> Unit) {
 }
 
 @Composable
-fun CurrentSongDisplay(song: Song, isPlaying: Boolean, onPlayPauseClick: () -> Unit) {
+fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -109,9 +107,10 @@ fun CurrentSongDisplay(song: Song, isPlaying: Boolean, onPlayPauseClick: () -> U
         }
     }
 }
+
 @Composable
-fun MusicPlayerScreen(songs: List<Song>, modifier: Modifier) {
-    var currentSong by remember { mutableStateOf<Song?>(null) }
+fun MusicPlayerScreen(songs: List<SongWithDetails>, modifier: Modifier) {
+    var currentSong by remember { mutableStateOf<SongWithDetails?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -146,33 +145,11 @@ fun MusicPlayerScreen(songs: List<Song>, modifier: Modifier) {
         }
     }
 }
+
 @Preview
 @Composable
 fun PreviewMusicPlayer() {
-    val album = Album("Whatever", listOf(), listOf(), null)
-    val sampleSongs = listOf(
-        Song(
-            path = "",
-            title = "Bohemian Rhapsody",
-            artists = listOf(Artist("Queen", listOf(), null)),
-            album = album,
-            duration = 120
-        ),
-        Song(
-            path = "",
-            title = "Bohemian Rhapsody",
-            artists = listOf(Artist("Queen", listOf(), null)),
-            album = album,
-            duration = 120
-        ),
-        Song(
-            path = "",
-            title = "Bohemian Rhapsody",
-            artists = listOf(Artist("Queen", listOf(), null)),
-            album = album,
-            duration = 120
-        ),
-    )
+    val sampleSongs: List<SongWithDetails> = listOf()
 
     MaterialTheme {
         MusicPlayerScreen(sampleSongs, modifier = Modifier.padding())

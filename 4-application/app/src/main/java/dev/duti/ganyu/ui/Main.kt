@@ -20,9 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import dev.duti.ganyu.data.Album
-import dev.duti.ganyu.data.Artist
-import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.ui.songs.MusicPlayerScreen
 import kotlinx.coroutines.launch
 
@@ -67,33 +64,8 @@ fun MainView() {
         { innerPadding ->
             when (screen) {
                 Screens.SONGS -> {
-                    val album = Album("Whatever", listOf(), listOf(), null)
-
-                    val sampleSongs = listOf(
-                        Song(
-                            path = "",
-                            title = "Bohemian Rhapsody",
-                            artists = listOf(Artist("Queen", listOf(), null)),
-                            album = album,
-                            duration = 120
-                        ),
-                        Song(
-                            path = "",
-                            title = "Bohemian Rhapsody",
-                            artists = listOf(Artist("Queen", listOf(), null)),
-                            album = album,
-                            duration = 120
-                        ),
-                        Song(
-                            path = "",
-                            title = "Bohemian Rhapsody",
-                            artists = listOf(Artist("Queen", listOf(), null)),
-                            album = album,
-                            duration = 120
-                        ),
-                    )
                     MusicPlayerScreen(
-                        sampleSongs,
+                        listOf(),
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
