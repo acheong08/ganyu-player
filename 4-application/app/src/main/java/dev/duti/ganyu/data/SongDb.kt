@@ -1,7 +1,7 @@
 package dev.duti.ganyu.data
 
-import android.net.Uri
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity
@@ -9,7 +9,7 @@ data class Song(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val path: String,
     val title: String,
-    val albumId: Long,
+    val albumId: Long?,
     val duration: Int
 )
 
@@ -22,11 +22,14 @@ data class SongArtistCrossRef(
     val artistId: Long
 )
 
-@Entity
+@Entity(
+    indices = [Index(value = ["title"], unique = true)]
+)
 data class Album(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
-    val art: String?
+    val art: String?,
+    val year: Int? = null
 )
 
 @Entity(
@@ -38,7 +41,9 @@ data class AlbumArtistCrossRef(
     val artistId: Long
 )
 
-@Entity
+@Entity(
+    indices = [Index(value = ["name"], unique = true)]
+)
 data class Artist(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,

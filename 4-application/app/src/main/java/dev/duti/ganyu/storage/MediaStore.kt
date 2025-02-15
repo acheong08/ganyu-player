@@ -13,7 +13,9 @@ import dev.duti.ganyu.data.AlbumArtistCrossRef
 import dev.duti.ganyu.data.Artist
 import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.data.SongArtistCrossRef
+import dev.duti.ganyu.data.SongWithDetails
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 
 @Dao
@@ -27,30 +29,34 @@ interface SongDao {
     @Query("SELECT * FROM song")
     fun getAllSongs(): Flow<List<Song>>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM song 
         WHERE title LIKE '%' || :searchTerm || '%'
-    """)
+    """
+    )
     fun searchSongs(searchTerm: String): Flow<List<Song>>
 
     // We can use this with only 1 id to fetch for 1 artist
-    @Query("""
+    @Query(
+        """
         SELECT song.* 
         FROM song
         INNER JOIN song_artist ON song.id = song_artist.songId
         WHERE song_artist.artistId IN (:artistIds)
         GROUP BY song.id
-    """)
+    """
+    )
     fun getSongsByAnyArtist(artistIds: List<Int>): Flow<List<Song>>
 
     @Query("SELECT * FROM song WHERE albumId = :albumId")
-    fun  getSongsByAlbum(albumId: Long): Flow<List<Song>>
+    fun getSongsByAlbum(albumId: Long): Flow<List<Song>>
 }
 
 @Dao
 interface AlbumDao {
     @Insert
-    suspend fun insert(album: Album)
+    suspend fun insert(album: Album): Long
 
     @Delete
     suspend fun delete(album: Album)
@@ -62,14 +68,19 @@ interface AlbumDao {
     @Query("SELECT * FROM album WHERE title LIKE '%' || :searchTerm || '%'")
     fun searchAlbums(searchTerm: String): Flow<List<Album>>
 
+    @Query("SELECT * FROM album WHERE title = :albumTitle LIMIT 1")
+    fun getByAlbumTitle(albumTitle: String): Flow<Album?>
+
     // Get albums by artist(s) via junction table
-    @Query("""
+    @Query(
+        """
         SELECT album.* 
         FROM album
         INNER JOIN album_artist ON album.id = album_artist.albumId
         WHERE album_artist.artistId IN (:artistIds)
         GROUP BY album.id
-    """)
+    """
+    )
     fun getAlbumsByArtists(artistIds: List<Int>): Flow<List<Album>>
 }
 
@@ -83,6 +94,9 @@ interface ArtistDao {
 
     @Query("SELECT * FROM artist")
     fun getAllArtists(): Flow<List<Artist>>
+
+    @Query("SELECT * FROM artist WHERE name = :artistName LIMIT 1")
+    fun getByArtistName(artistName: String): Flow<Artist?>
 
     @Query("SELECT * FROM artist WHERE name LIKE '%'|| :searchTerm ||'%'")
     fun searchArtists(searchTerm: String): Flow<List<Artist>>
@@ -125,15 +139,27 @@ class MusicRepository(
 ) {
     // Song operations
     fun getAllSongs() = songDao.getAllSongs()
-    suspend fun insertSong(song: Song, artists: List<Artist>): Long {
-        val songId = this.songDao.insert(song)
-        if (artists.isNotEmpty()) {
-            for (artist in artists) {
-                songArtistDao.insert(SongArtistCrossRef(songId, artist.id))
-            }
+    suspend fun insertSong(song: SongWithDetails): Long {
+        val albumId = if (song.album != null) {
+            this.albumDao.getByAlbumTitle(song.album.title).first()?.id
+                ?: this.albumDao.insert(song.album.toBasicAlbum())
+        } else {
+            null
+        }
+        val songId = this.songDao.insert(
+            song.toBasicSong(albumId)
+        )
+        for (artist in song.artists) {
+            val artistId =
+                this.artistDao.getByArtistName(artist.name).first()?.id ?: this.artistDao.insert(
+                    artist
+                )
+            this.songArtistDao.insert(SongArtistCrossRef(songId, artistId))
+
         }
         return songId
     }
+
     suspend fun deleteSong(song: Song) {
         this.songArtistDao.deleteBySongId(song.id)
         this.songDao.delete(song)

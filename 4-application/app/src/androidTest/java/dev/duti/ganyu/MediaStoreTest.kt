@@ -5,7 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.duti.ganyu.data.Artist
-import dev.duti.ganyu.data.Song
+import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.storage.MusicDatabase
 import dev.duti.ganyu.storage.MusicRepository
 import kotlinx.coroutines.flow.first
@@ -33,23 +33,27 @@ class MediaStoreTest {
             db.albumArtistDao()
         )
     }
+
     @Test
     fun insertSong() = runBlocking {
-        val song = Song(
+        val song = SongWithDetails(
             path = "example",
             title = "Propose",
-            albumId = 1,
-            duration = 120
+            album = null,
+            duration = 120,
+            artists = listOf(
+                Artist(
+                    name = "9Lana",
+                    art = null
+                )
+            )
         )
-        val artist = Artist(
-            name = "9Lana",
-            art = null
-        )
-        val songId = repo.insertSong(song, listOf(artist))
+        val songId = repo.insertSong(song)
         assert(repo.getAllSongs().first()[0].id == songId)
         assert(repo.getAllSongArtists().first()[0].songId == songId)
         assert(repo.getSongArtists(songId)[0].songId == songId)
     }
+
     @After
     fun teardown() {
         db.close()
