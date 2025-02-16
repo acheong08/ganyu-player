@@ -66,7 +66,7 @@ fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = song.artists.toString(),
+                text = song.artist.name,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -92,7 +92,7 @@ fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseCli
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = song.artists.toString(),
+                text = song.artist.name,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

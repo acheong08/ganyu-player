@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import dev.duti.ganyu.data.AlbumWithDetails
 import dev.duti.ganyu.data.Artist
 import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.storage.MusicDatabase
@@ -29,29 +30,27 @@ class MediaStoreTest {
             db.songDao(),
             db.albumDao(),
             db.artistDao(),
-            db.songArtistDao(),
-            db.albumArtistDao()
         )
     }
 
     @Test
     fun insertSong() = runBlocking {
+        val artist = Artist(
+            name = "9Lana",
+            art = null
+        )
         val song = SongWithDetails(
             path = "example",
             title = "Propose",
-            album = null,
+            album = AlbumWithDetails("Unknown Album", null, artist),
             duration = 120,
-            artists = listOf(
-                Artist(
-                    name = "9Lana",
-                    art = null
-                )
-            )
+            artist = artist
+
         )
         val songId = repo.insertSong(song)
         assert(repo.getAllSongs().first()[0].id == songId)
-        assert(repo.getAllSongArtists().first()[0].songId == songId)
-        assert(repo.getSongArtists(songId)[0].songId == songId)
+        assert(repo.getAllArtists().first()[0].name == "9Lana")
+        assert(repo.getAllAlbums().first()[0].name == song.album?.name)
     }
 
     @After

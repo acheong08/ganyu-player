@@ -1,13 +1,13 @@
 package dev.duti.ganyu.data
 
 data class AlbumWithDetails (
-    val title: String,
+    val name: String,
     val art: String?,
-    val artists: List<Artist>,
+    val artist: Artist,
     val year: Int? = null
 ) {
-    fun toBasicAlbum(): Album {
-        return Album(title = title, art = art, year = year)
+    fun toBasicAlbum(artistId: Long): Album {
+        return Album(name = name, art = art, artist = artistId , year = year)
     }
 }
 
@@ -16,10 +16,10 @@ data class SongWithDetails (
     val title: String,
     val album: AlbumWithDetails?,
     val duration: Int,
-    val artists: List<Artist>,
+    val artist: Artist,
     val id: Long = -1,
 ) {
-    fun toBasicSong(albumId: Long?): Song {
-        return Song(title = title, path = path, duration = duration, albumId = albumId)
+    fun toBasicSong(artistId: Long, albumId: Long?): Song {
+        return Song(title = title, path = path, duration = duration, artistId = artistId, albumId = albumId)
     }
 }

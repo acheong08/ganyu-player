@@ -1,5 +1,6 @@
 package dev.duti.ganyu.ui
 
+import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,13 +21,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import dev.duti.ganyu.storage.getLocalMediaFiles
 import dev.duti.ganyu.ui.songs.MusicPlayerScreen
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainView() {
+fun MainView(ctx: Context) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var screen by remember { mutableStateOf(Screens.SONGS) }
     val scope = rememberCoroutineScope()
@@ -65,7 +67,7 @@ fun MainView() {
             when (screen) {
                 Screens.SONGS -> {
                     MusicPlayerScreen(
-                        listOf(),
+                        getLocalMediaFiles(ctx),
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

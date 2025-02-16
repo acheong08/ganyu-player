@@ -10,6 +10,7 @@ activityCompose = "1.10.0"
 composeBom = "2025.02.00"
 roomCommon = "2.6.1"
 roomKtx = "2.6.1"
+appcompat = "1.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +31,7 @@ androidx-room-common = { group = "androidx.room", name = "room-common", version.
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-room-runtime = {group = "androidx.room", name = "room-runtime", version.ref = "roomKtx"}
 androidx-room-compiler = {group = "androidx.room", name = "room-compiler", version.ref = "roomKtx"}
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 
 [plugins]
