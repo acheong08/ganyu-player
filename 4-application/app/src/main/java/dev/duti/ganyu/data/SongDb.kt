@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 )
 data class Song(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val path: String,
+    val path: Long,
     val title: String,
     val artistId: Long,
     val albumId: Long?,

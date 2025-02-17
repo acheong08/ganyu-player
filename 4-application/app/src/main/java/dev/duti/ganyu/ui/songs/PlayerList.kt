@@ -1,5 +1,7 @@
 package dev.duti.ganyu.ui.songs
 
+import android.content.ContentUris
+import android.provider.MediaStore
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,8 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
 import dev.duti.ganyu.R
 import dev.duti.ganyu.data.SongWithDetails
 
@@ -81,8 +85,7 @@ fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseCli
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(16.dp), verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -99,9 +102,11 @@ fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseCli
             )
         }
 
-        IconButton(onClick = onPlayPauseClick) {
+        IconButton(onClick = {
+            onPlayPauseClick()
+        }) {
             Icon(
-                imageVector = Icons.Default.PlayArrow,
+                imageVector = if (isPlaying) Icons.Default.Clear else Icons.Default.PlayArrow,
                 contentDescription = if (isPlaying) "Pause" else "Play"
             )
         }
@@ -109,49 +114,45 @@ fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseCli
 }
 
 @Composable
-fun MusicPlayerScreen(songs: List<SongWithDetails>, modifier: Modifier) {
+fun MusicPlayerScreen(songs: List<SongWithDetails>, player: ExoPlayer, modifier: Modifier) {
     var currentSong by remember { mutableStateOf<SongWithDetails?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
             currentSong?.let { song ->
-                CurrentSongDisplay(
-                    song = song,
-                    isPlaying = isPlaying,
-                    onPlayPauseClick = { isPlaying = !isPlaying }
-                )
+                CurrentSongDisplay(song = song, isPlaying, onPlayPauseClick = {
+                    if (player.isPlaying) {
+                        player.pause()
+                    } else {
+                        player.play()
+                    }
+                    isPlaying = !isPlaying
+
+                })
             }
-        },
-        modifier = modifier
+        }, modifier = modifier
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(8.dp)
+                .fillMaxSize(), contentPadding = PaddingValues(8.dp)
         ) {
             items(songs.size) { songIdx ->
                 val song = songs[songIdx]
-                SongItem(
-                    song = song,
-                    onItemClick = {
-                        currentSong = song
-                        isPlaying = true
-                    }
-                )
+                SongItem(song = song, onItemClick = {
+                    currentSong = song
+                    player.setMediaItem(
+                        MediaItem.fromUri(
+                            ContentUris.withAppendedId(
+                                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path
+                            )
+                        )
+                    )
+                    player.prepare()
+                })
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun PreviewMusicPlayer() {
-    val sampleSongs: List<SongWithDetails> = listOf()
-
-    MaterialTheme {
-        MusicPlayerScreen(sampleSongs, modifier = Modifier.padding())
     }
 }

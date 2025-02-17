@@ -59,7 +59,7 @@ fun getLocalMediaFiles(ctx: Context): List<SongWithDetails> {
                 null,
                 artist = artist
             ) else null
-            val song = SongWithDetails(id.toString(), title, album, duration, artist)
+            val song = SongWithDetails(id, title, album, duration, artist)
             songs.add(song)
             Log.i("FileStore", song.toString())
         }

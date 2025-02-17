@@ -40,7 +40,7 @@ class MediaStoreTest {
             art = null
         )
         val song = SongWithDetails(
-            path = "example",
+            path = 0L,
             title = "Propose",
             album = AlbumWithDetails("Unknown Album", null, artist),
             duration = 120,

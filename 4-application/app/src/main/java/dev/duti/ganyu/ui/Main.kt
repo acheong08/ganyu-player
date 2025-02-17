@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.media3.exoplayer.ExoPlayer
 import dev.duti.ganyu.storage.getLocalMediaFiles
 import dev.duti.ganyu.ui.songs.MusicPlayerScreen
 import kotlinx.coroutines.launch
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainView(ctx: Context) {
+fun MainView(ctx: Context, player: ExoPlayer) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var screen by remember { mutableStateOf(Screens.SONGS) }
     val scope = rememberCoroutineScope()
@@ -68,6 +69,7 @@ fun MainView(ctx: Context) {
                 Screens.SONGS -> {
                     MusicPlayerScreen(
                         getLocalMediaFiles(ctx),
+                        player,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
