@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -26,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +42,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import dev.duti.ganyu.R
 import dev.duti.ganyu.data.SongWithDetails
+import dev.duti.ganyu.storage.MusicRepository
 
 
 @Composable
@@ -114,9 +117,11 @@ fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseCli
 }
 
 @Composable
-fun MusicPlayerScreen(songs: List<SongWithDetails>, player: ExoPlayer, modifier: Modifier) {
+fun MusicPlayerScreen(repo: MusicRepository, player: ExoPlayer, modifier: Modifier) {
     var currentSong by remember { mutableStateOf<SongWithDetails?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
+
+    val songs = repo.getAllSongs().collectAsState(initial = emptyList())
 
     Scaffold(
         bottomBar = {
@@ -138,10 +143,10 @@ fun MusicPlayerScreen(songs: List<SongWithDetails>, player: ExoPlayer, modifier:
                 .padding(padding)
                 .fillMaxSize(), contentPadding = PaddingValues(8.dp)
         ) {
-            items(songs.size) { songIdx ->
-                val song = songs[songIdx]
-                SongItem(song = song, onItemClick = {
-                    currentSong = song
+            itemsIndexed(songs.value) { _, song ->
+                val fullSong = repo.getSongDetails(song).collectAsState(SongWithDetails.empty())
+                SongItem(song = fullSong.value, onItemClick = {
+                    currentSong = fullSong.value
                     player.setMediaItem(
                         MediaItem.fromUri(
                             ContentUris.withAppendedId(
@@ -153,6 +158,7 @@ fun MusicPlayerScreen(songs: List<SongWithDetails>, player: ExoPlayer, modifier:
                 })
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
+
         }
     }
 }

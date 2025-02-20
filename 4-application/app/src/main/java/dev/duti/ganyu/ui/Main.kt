@@ -22,14 +22,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.media3.exoplayer.ExoPlayer
-import dev.duti.ganyu.storage.getLocalMediaFiles
+import dev.duti.ganyu.storage.MusicRepository
 import dev.duti.ganyu.ui.songs.MusicPlayerScreen
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainView(ctx: Context, player: ExoPlayer) {
+fun MainView(player: ExoPlayer, repo: MusicRepository) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var screen by remember { mutableStateOf(Screens.SONGS) }
     val scope = rememberCoroutineScope()
@@ -41,42 +41,34 @@ fun MainView(ctx: Context, player: ExoPlayer) {
                     drawerState.close()
                 }
             }
-        },
-        drawerState = drawerState
+        }, drawerState = drawerState
     ) {
         // Screen content
 
         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-            TopAppBar(
-                title = { Text(screen.toString()) },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        scope.launch {
-                            if (drawerState.isClosed) {
-                                drawerState.open()
-                            } else {
-                                drawerState.close()
-                            }
+            TopAppBar(title = { Text(screen.toString()) }, navigationIcon = {
+                IconButton(onClick = {
+                    scope.launch {
+                        if (drawerState.isClosed) {
+                            drawerState.open()
+                        } else {
+                            drawerState.close()
                         }
-                    }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
+                }) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
                 }
-            )
-        })
-        { innerPadding ->
+            })
+        }) { innerPadding ->
             when (screen) {
                 Screens.SONGS -> {
                     MusicPlayerScreen(
-                        getLocalMediaFiles(ctx),
-                        player,
-                        modifier = Modifier.padding(innerPadding)
+                        repo, player, modifier = Modifier.padding(innerPadding)
                     )
                 }
 
                 else -> Text(
-                    text = screen.toString(),
-                    modifier = Modifier.padding(innerPadding)
+                    text = screen.toString(), modifier = Modifier.padding(innerPadding)
                 )
             }
 

@@ -9,11 +9,13 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import dev.duti.ganyu.data.Album
+import dev.duti.ganyu.data.AlbumWithDetails
 import dev.duti.ganyu.data.Artist
 import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.data.SongWithDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 
 
 @Dao
@@ -39,7 +41,7 @@ interface SongDao {
     fun getSongsByAlbum(albumId: Long): Flow<List<Song>>
 
     @Query("SELECT * FROM song WHERE path = :path LIMIT 1")
-    fun getSongByPath(path: String): Flow<Song?>
+    fun getSongByPath(path: Long): Flow<Song?>
 }
 
 @Dao
@@ -59,6 +61,9 @@ interface AlbumDao {
 
     @Query("SELECT * FROM album WHERE name = :albumTitle LIMIT 1")
     fun getByAlbumTitle(albumTitle: String): Flow<Album?>
+
+    @Query("SELECT * FROM album WHERE id = :id LIMIT 1")
+    fun getById(id: Long): Flow<Album?>
 }
 
 @Dao
@@ -75,6 +80,9 @@ interface ArtistDao {
     @Query("SELECT * FROM artist WHERE name = :artistName LIMIT 1")
     fun getByArtistName(artistName: String): Flow<Artist?>
 
+    @Query("SELECT * FROM artist WHERE id = :id LIMIT 1")
+    fun getById(id: Long): Flow<Artist>
+
     @Query("SELECT * FROM artist WHERE name LIKE '%'|| :searchTerm ||'%'")
     fun searchArtists(searchTerm: String): Flow<List<Artist>>
 }
@@ -88,6 +96,10 @@ class MusicRepository(
     // Song operations
     fun getAllSongs() = songDao.getAllSongs()
     suspend fun insertSong(song: SongWithDetails): Long {
+        val existingSong = songDao.getSongByPath(song.path).first()
+        if ( existingSong != null) {
+            return existingSong.id
+        }
         val artistId =
             this.artistDao.getByArtistName(song.artist.name).first()?.id ?: this.artistDao.insert(
                 song.artist
@@ -103,6 +115,15 @@ class MusicRepository(
             song.toBasicSong(artistId, albumId)
         )
         return songId
+    }
+    fun getSongDetails(song: Song): Flow<SongWithDetails> {
+        return flow {
+
+            val artist = artistDao.getById(song.artistId).first()
+            val album = if (song.albumId != null) albumDao.getById(song.albumId).first() else null
+            emit(SongWithDetails(song.path, song.title,
+                album?.let { AlbumWithDetails.fromBasicAlbum(it, artist) }, song.duration, artist))
+        }
     }
     fun getAllArtists() = artistDao.getAllArtists()
     fun getAllAlbums() = albumDao.getAllAlbums()
