@@ -1,93 +1,63 @@
 **Mobile Development 2024/25 Portfolio**
+
 # Requirements
 
 Student ID: `c23041974`
 
-Command & Control (C2) Infrastructure
+## Functional requirements
 
-- Use Syncthing’s decentralized relay network for C2 communication to anonymize attacker infrastructure.
+### Basic music player
 
-- Support encrypted bidirectional communication (commands + data exfiltration) over Syncthing protocols.
+The application should match the music playing functionality of VLC, including but not limited to:
 
-- Implement automatic reconnection to C2 relays after network interruptions.
+- Full song list with title and artist
+- Artists list with name, optional art, and number of tracks
+- Album list with name and artist
+- A sticky banner with the currently playing song as well as basic controls
+- Android media integration for media control on lock screen
+- Full text search for artists, song titles, and albums
 
-- Enable queuing of commands for offline devices, with execution upon reconnection.
+### Invidious and yt-dlp integration
 
-2. Surveillance Capabilities
+- The user should be able to search for remote songs within the app and download them in different formats
+- Downloading a song should automatically insert appropriate metadata such as title, artist, and link. Art is optional
+- Due to recent YouTube VPN blocks, a method must be provided for the user to log in, such as providing cookies.txt or using WebView to prompt for login.
 
-- Location Tracking:
+### Spotify-dl integration
 
-  - Collect GPS coordinates in real time (configurable intervals).
+- The user should be able to import spotify playlists by providing a link
+- Integration with the Spotify API is explicitly **not** a goal
 
-  - Continuously scan and report nearby Wi-Fi BSSIDs for passive geolocation via Apple’s CoreLocation service.
+### Lua-based plugins for customization
 
-- Data Exfiltration:
+- The application should provide hooks in different areas of the interface and service to allow customization
+- Plugins should contain configuration to inform the application when to make a callback or display custom buttons and text
 
-  - Extract SMS, call logs, contacts, and files (e.g., documents, media).
+Example plugins:
 
-  - Capture and transmit device metadata (IMEI, SIM details, installed apps).
+**Sort by ELO**
 
-- Remote Access:
+For such a plugin, it should register 2 callbacks:
 
-  - Activate camera/microphone on command for live surveillance.
+- An upvote/downvote button that shows in a song's extra actions menu
+- A sorting implementation that shows up alongside other options like alphabetical order
 
-3. Stealth & Persistence
+When the sorting option is selected, the callback should be called with the full list of songs which returns an array of song ids.
 
-- Hide app icon and background processes from default system menus. Alternaitvely, masquerade as a legitimate app (e.g. Tetris)
+**Daily song download**
 
-- Maintain persistence after device reboot (e.g., masquerade as system service).
+This plugin should integrate with Invidious to download new songs from subscriptions on a daily basis. To achieve this, the application must provide hooks to schedule background tasks, fetch and download songs, as well as manage playlists.
 
-- Delete temporary operational data (logs, cached files) after transmission.
+## Non-functional requirements
 
-- Disguise network traffic as Syncthing sync activity to evade detection.
+### User experience
 
-4. Attacker Interface
+- The application should be performant and be able handle playlist sizes of up to 10,000 songs which equates to approximately 30 gigabytes.
+- Interactions should be intuitive, matching common Android actions such as swiping left to delete, long pressing for extra context, etc.
+- Processing and IO should not be done on the main thread. All data should be loaded and processed asynchronously
 
-- Provide a centralized dashboard to:
+### Security
 
-  - Manage multiple infected devices (grouping, tagging, search).
-
-  - Visualize location history on an interactive map.
-
-  - Review exfiltrated data (SMS, calls) with filtering by keywords/time.
-
-Non-Functional Requirements
-
-1. Security
-
-- Encrypt all exfiltrated data end-to-end (AES-256) and in transit (TLS).
-
-- Authenticate C2 relays to prevent man-in-the-middle attacks (e.g. Certificate pinning)
-
-2. Performance
-
-- Limit battery consumption to prevent raising suspicions
-
-3. Compatibility
-
-- Support Android 10–14 (min SDK 29) with backward-compatible APK variants.
-
-- Function on devices without Google Play Services (Huawei)
-
-4. Reliability
-
-- Achieve high uptime using redundant relays.
-
-- Gracefully handle intermittent network outages without data loss.
-
-5. Scalability
-
-- Support concurrent management of devices in the attacker dashboard and bulk sending of commands
-
-- Use modular architecture to allow incremental updates (e.g., new spyware modules).
-
-
-6. Usability (Attacker-Facing)
-
-- Ensure dashboard responsiveness.
-
-- Provide contextual tooltips for advanced features (e.g., BSSID geolocation).
-
-7. Legal Compliance (Operational)
-
-- Force dependence on remote service to allow logging and prevent malicious usage.
+- Credentials for third party services should be stored securely and cannot be accessed by other apps.
+- Plugins should be sandboxed and should not be able to access any Android APIs such as files or images
+- Permissions must be explicitly given for plugins to access features such as internet access

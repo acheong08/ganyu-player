@@ -39,11 +39,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
 import dev.duti.ganyu.R
 import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.storage.MusicRepository
-
 
 @Composable
 fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
@@ -56,7 +57,9 @@ fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
     ) {
         // Album art placeholder
         Image(
-            painter = painterResource(R.drawable.ic_launcher_foreground), // Replace with actual artwork
+            painter = painterResource(
+                R.drawable.ic_launcher_foreground
+            ), // Replace with actual artwork
             contentDescription = "Album art",
             modifier = Modifier
                 .size(48.dp)
@@ -83,7 +86,8 @@ fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
 }
 
 @Composable
-fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseClick: () -> Unit) {
+fun CurrentSongDisplay(song: SongWithDetails, onPlayPauseClick: () -> Unit) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,35 +109,32 @@ fun CurrentSongDisplay(song: SongWithDetails, isPlaying: Boolean, onPlayPauseCli
             )
         }
 
-        IconButton(onClick = {
-            onPlayPauseClick()
-        }) {
+        IconButton(onClick = { onPlayPauseClick() }) {
             Icon(
-                imageVector = if (isPlaying) Icons.Default.Clear else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) "Pause" else "Play"
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Play"
             )
         }
     }
 }
 
+@UnstableApi
 @Composable
-fun MusicPlayerScreen(repo: MusicRepository, player: ExoPlayer, modifier: Modifier) {
+fun MusicPlayerScreen(repo: MusicRepository, player: MediaController, modifier: Modifier) {
     var currentSong by remember { mutableStateOf<SongWithDetails?>(null) }
-    var isPlaying by remember { mutableStateOf(false) }
 
     val songs = repo.getAllSongs().collectAsState(initial = emptyList())
 
     Scaffold(
         bottomBar = {
             currentSong?.let { song ->
-                CurrentSongDisplay(song = song, isPlaying, onPlayPauseClick = {
+                CurrentSongDisplay(song = song, onPlayPauseClick = {
                     if (player.isPlaying) {
                         player.pause()
                     } else {
+
                         player.play()
                     }
-                    isPlaying = !isPlaying
-
                 })
             }
         }, modifier = modifier
@@ -158,7 +159,6 @@ fun MusicPlayerScreen(repo: MusicRepository, player: ExoPlayer, modifier: Modifi
                 })
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
-
         }
     }
 }

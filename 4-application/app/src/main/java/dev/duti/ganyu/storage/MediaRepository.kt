@@ -11,6 +11,8 @@ import androidx.room.RoomDatabase
 import dev.duti.ganyu.data.Album
 import dev.duti.ganyu.data.AlbumWithDetails
 import dev.duti.ganyu.data.Artist
+import dev.duti.ganyu.data.Playlist
+import dev.duti.ganyu.data.PlaylistSongCrossRef
 import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.data.SongWithDetails
 import kotlinx.coroutines.flow.Flow
@@ -87,6 +89,29 @@ interface ArtistDao {
     fun searchArtists(searchTerm: String): Flow<List<Artist>>
 }
 
+@Dao
+interface PlaylistDao {
+    @Insert
+    fun insert(playlist: Playlist)
+
+    @Delete()
+    fun delete(playlist: Playlist)
+}
+
+@Dao
+interface PlaylistSongDao {
+    @Insert
+    fun insert(ps: PlaylistSongCrossRef)
+
+    @Delete
+    fun delete(ps: PlaylistSongCrossRef)
+
+    @Query("SELECT * FROM ps_cross WHERE playlistId = :playlistId ")
+    fun getByPlaylist(playlistId: Long): Flow<List<PlaylistSongCrossRef>>
+
+    @Query("SELECT * FROM ps_cross WHERE songId = :songId ")
+    fun getBySong(songId: Long): Flow<List<PlaylistSongCrossRef>>
+}
 
 class MusicRepository(
     private val songDao: SongDao,

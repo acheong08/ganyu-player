@@ -36,3 +36,17 @@ data class Artist(
     val art: String?
     // TODO: Metadata on artist such as youtube channel
 )
+@Entity
+data class Playlist(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String
+)
+
+@Entity(
+    tableName = "ps_cross"
+)
+data class PlaylistSongCrossRef(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val playlistId: Long,
+    val songId: Long
+)
