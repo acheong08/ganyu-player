@@ -12,8 +12,11 @@ import dev.duti.ganyu.data.SongWithDetails
 
 fun getLocalMediaFiles(ctx: Context): List<SongWithDetails> {
     Log.i("FileStore", "Looking for local media")
-    if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_MEDIA_AUDIO) !=
-        PackageManager.PERMISSION_GRANTED) {
+    if (ContextCompat.checkSelfPermission(
+            ctx,
+            Manifest.permission.READ_MEDIA_AUDIO
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
         Log.e("FileStore", "MISSING PERMISSION: READ_MEDIA_AUDIO")
         return emptyList()
     }
@@ -28,14 +31,10 @@ fun getLocalMediaFiles(ctx: Context): List<SongWithDetails> {
         MediaStore.Audio.Media.DATA
     )
     // Filter only music files with valid duration
-//    val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND " +
-//            "${MediaStore.Audio.Media.DURATION} >= 0"
-    val cursor = ctx.contentResolver.query(
-        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-        projection,
-        null,
-        null,
-        null
+    val selection =
+        "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND " + "${MediaStore.Audio.Media.DURATION} >= 0"
+    ctx.contentResolver.query(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, selection, null, null
     )?.use { cursor ->
         val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
         val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
@@ -49,15 +48,13 @@ fun getLocalMediaFiles(ctx: Context): List<SongWithDetails> {
             val title = cursor.getString(titleCol) ?: "Unknown"
             val artistName = cursor.getString(artistCol) ?: "Unknown Artist"
             val albumName = cursor.getString(albumCol) ?: ""
-            val duration = cursor.getInt(durationCol)
+            val duration = cursor.getLong(durationCol)
             val path = cursor.getString(pathCol)
             Log.i("FileStore", "Path: $path")
 
             val artist = Artist(name = artistName, art = null)
             val album = if (albumName != "") AlbumWithDetails(
-                albumName,
-                null,
-                artist = artist
+                albumName, null, artist = artist
             ) else null
             val song = SongWithDetails(id, title, album, duration, artist)
             songs.add(song)

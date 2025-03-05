@@ -13,7 +13,7 @@ data class Song(
     val title: String,
     val artistId: Long,
     val albumId: Long?,
-    val duration: Int
+    val duration: Long
 )
 
 @Entity(

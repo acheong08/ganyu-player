@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.icons)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)

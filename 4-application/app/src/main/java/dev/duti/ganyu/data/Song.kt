@@ -20,7 +20,7 @@ data class SongWithDetails (
     val path: Long,
     val title: String,
     val album: AlbumWithDetails?,
-    val duration: Int,
+    val duration: Long,
     val artist: Artist,
     val id: Long = -1,
 ) {

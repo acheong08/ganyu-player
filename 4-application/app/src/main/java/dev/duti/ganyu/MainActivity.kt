@@ -36,7 +36,11 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
         db = MusicDatabase.getDatabase(applicationContext)
         repo = MusicRepository(db.songDao(), db.albumDao(), db.artistDao())
         controllerFuture = MediaController.Builder(
-            applicationContext, SessionToken(applicationContext, ComponentName(applicationContext, PlaybackService::class.java))
+            applicationContext,
+            SessionToken(
+                applicationContext,
+                ComponentName(applicationContext, PlaybackService::class.java)
+            )
         ).buildAsync()
         controllerFuture.addListener(
             { mediaController = controllerFuture.get() }, MoreExecutors.directExecutor()

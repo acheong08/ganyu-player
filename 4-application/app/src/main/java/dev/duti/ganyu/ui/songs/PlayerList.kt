@@ -1,7 +1,5 @@
 package dev.duti.ganyu.ui.songs
 
-import android.content.ContentUris
-import android.provider.MediaStore
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,33 +16,32 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import dev.duti.ganyu.R
+import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.storage.MusicRepository
+import kotlinx.coroutines.delay
 
 @Composable
 fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
@@ -81,12 +78,48 @@ fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+
         }
     }
 }
 
 @Composable
-fun CurrentSongDisplay(song: SongWithDetails, onPlayPauseClick: () -> Unit) {
+fun SongList(
+    songs: List<Song>,
+    repo: MusicRepository,
+    padding: PaddingValues,
+    onSongClick: (idx: Int, song: SongWithDetails) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(padding)
+            .fillMaxSize(), contentPadding = PaddingValues(8.dp)
+    ) {
+        itemsIndexed(songs) { idx, song ->
+            val fullSong = repo.getSongDetails(song).collectAsState(SongWithDetails.empty())
+            SongItem(song = fullSong.value, onItemClick = { onSongClick(idx, fullSong.value) })
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+        }
+    }
+}
+
+@Composable
+fun CurrentSongDisplay(song: SongWithDetails, player: MediaController) {
+
+    val sliderPosition = remember { mutableFloatStateOf(0f) }
+    val isPlaying = remember { mutableStateOf(player.isPlaying) }
+
+    LaunchedEffect(player) {
+        while (true) {
+            // Update slider position based on current playback position
+            if (song.duration > 0) {
+                sliderPosition.floatValue =
+                    player.currentPosition.toFloat() / song.duration.toFloat()
+            }
+            isPlaying.value = player.isPlaying
+            delay(1000) // Update every second
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -107,58 +140,31 @@ fun CurrentSongDisplay(song: SongWithDetails, onPlayPauseClick: () -> Unit) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-        }
-
-        IconButton(onClick = { onPlayPauseClick() }) {
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = "Play"
+            Slider(
+                value = sliderPosition.floatValue,
+                onValueChange = { sliderPosition.floatValue = it },
+                onValueChangeFinished = {
+                    player.seekTo(
+                        (song.duration * sliderPosition.floatValue).toLong()
+                    )
+                },
+                valueRange = 0f..1f,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
-    }
-}
 
-@UnstableApi
-@Composable
-fun MusicPlayerScreen(repo: MusicRepository, player: MediaController, modifier: Modifier) {
-    var currentSong by remember { mutableStateOf<SongWithDetails?>(null) }
-
-    val songs = repo.getAllSongs().collectAsState(initial = emptyList())
-
-    Scaffold(
-        bottomBar = {
-            currentSong?.let { song ->
-                CurrentSongDisplay(song = song, onPlayPauseClick = {
-                    if (player.isPlaying) {
-                        player.pause()
-                    } else {
-
-                        player.play()
-                    }
-                })
+        IconButton(onClick = {
+            if (player.isPlaying) {
+                player.pause()
+            } else {
+                player.play()
             }
-        }, modifier = modifier
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(), contentPadding = PaddingValues(8.dp)
-        ) {
-            itemsIndexed(songs.value) { _, song ->
-                val fullSong = repo.getSongDetails(song).collectAsState(SongWithDetails.empty())
-                SongItem(song = fullSong.value, onItemClick = {
-                    currentSong = fullSong.value
-                    player.setMediaItem(
-                        MediaItem.fromUri(
-                            ContentUris.withAppendedId(
-                                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path
-                            )
-                        )
-                    )
-                    player.prepare()
-                })
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-            }
+            isPlaying.value = !isPlaying.value
+        }) {
+            Icon(
+                imageVector = if (isPlaying.value) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = if (isPlaying.value) "Pause" else "Play"
+            )
         }
     }
 }
