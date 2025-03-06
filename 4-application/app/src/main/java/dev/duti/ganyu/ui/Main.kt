@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
+import dev.duti.ganyu.MyAppContext
 import dev.duti.ganyu.storage.MusicRepository
 import dev.duti.ganyu.ui.songs.MusicPlayerScreen
 import kotlinx.coroutines.launch
@@ -29,7 +30,7 @@ import kotlinx.coroutines.launch
 @UnstableApi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainView(player: MediaController, repo: MusicRepository) {
+fun MainView(ctx: MyAppContext) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var screen by remember { mutableStateOf(Screens.SONGS) }
     val scope = rememberCoroutineScope()
@@ -69,7 +70,7 @@ fun MainView(player: MediaController, repo: MusicRepository) {
         ) { innerPadding ->
             when (screen) {
                 Screens.SONGS -> {
-                    MusicPlayerScreen(repo, player, modifier = Modifier.padding(innerPadding))
+                    MusicPlayerScreen(ctx, modifier = Modifier.padding(innerPadding))
                 }
                 else -> Text(text = screen.toString(), modifier = Modifier.padding(innerPadding))
             }

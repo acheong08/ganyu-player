@@ -36,11 +36,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.media3.session.MediaController
+import dev.duti.ganyu.MyAppContext
 import dev.duti.ganyu.R
 import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.data.SongWithDetails
-import dev.duti.ganyu.storage.MusicRepository
 import kotlinx.coroutines.delay
 
 @Composable
@@ -86,7 +85,7 @@ fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
 @Composable
 fun SongList(
     songs: List<Song>,
-    repo: MusicRepository,
+    ctx: MyAppContext,
     padding: PaddingValues,
     onSongClick: (idx: Int, song: SongWithDetails) -> Unit
 ) {
@@ -96,7 +95,7 @@ fun SongList(
             .fillMaxSize(), contentPadding = PaddingValues(8.dp)
     ) {
         itemsIndexed(songs) { idx, song ->
-            val fullSong = repo.getSongDetails(song).collectAsState(SongWithDetails.empty())
+            val fullSong = ctx.repo.getSongDetails(song).collectAsState(SongWithDetails.empty())
             SongItem(song = fullSong.value, onItemClick = { onSongClick(idx, fullSong.value) })
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
         }
@@ -104,19 +103,19 @@ fun SongList(
 }
 
 @Composable
-fun CurrentSongDisplay(song: SongWithDetails, player: MediaController) {
+fun CurrentSongDisplay(song: SongWithDetails, ctx: MyAppContext) {
 
     val sliderPosition = remember { mutableFloatStateOf(0f) }
-    val isPlaying = remember { mutableStateOf(player.isPlaying) }
+    val isPlaying = remember { mutableStateOf(ctx.player.isPlaying) }
 
-    LaunchedEffect(player) {
+    LaunchedEffect(ctx.player) {
         while (true) {
             // Update slider position based on current playback position
             if (song.duration > 0) {
                 sliderPosition.floatValue =
-                    player.currentPosition.toFloat() / song.duration.toFloat()
+                    ctx.player.currentPosition.toFloat() / song.duration.toFloat()
             }
-            isPlaying.value = player.isPlaying
+            isPlaying.value = ctx.player.isPlaying
             delay(1000) // Update every second
         }
     }
@@ -144,7 +143,7 @@ fun CurrentSongDisplay(song: SongWithDetails, player: MediaController) {
                 value = sliderPosition.floatValue,
                 onValueChange = { sliderPosition.floatValue = it },
                 onValueChangeFinished = {
-                    player.seekTo(
+                    ctx.player.seekTo(
                         (song.duration * sliderPosition.floatValue).toLong()
                     )
                 },
@@ -154,10 +153,10 @@ fun CurrentSongDisplay(song: SongWithDetails, player: MediaController) {
         }
 
         IconButton(onClick = {
-            if (player.isPlaying) {
-                player.pause()
+            if (ctx.player.isPlaying) {
+                ctx.player.pause()
             } else {
-                player.play()
+                ctx.player.play()
             }
             isPlaying.value = !isPlaying.value
         }) {
