@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("com.chaquo.python")
 }
 
 android {
@@ -17,6 +18,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            // On Apple silicon, you can omit x86_64.
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
     }
 
     buildTypes {
@@ -39,7 +45,14 @@ android {
         compose = true
     }
 }
-
+chaquopy {
+    defaultConfig {
+        version = "3.13"
+        pip {
+            install("git+https://github.com/yt-dlp/yt-dlp")
+        }
+    }
+}
 dependencies {
 
     implementation(libs.androidx.core.ktx)

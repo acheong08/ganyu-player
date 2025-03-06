@@ -3,6 +3,7 @@ package dev.duti.ganyu
 import android.Manifest
 import android.content.ComponentName
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dev.duti.ganyu.storage.MusicDatabase
@@ -33,8 +36,10 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Initialize database
         db = MusicDatabase.getDatabase(applicationContext)
         repo = MusicRepository(db.songDao(), db.albumDao(), db.artistDao())
+        // Media player service
         controllerFuture = MediaController.Builder(
             applicationContext,
             SessionToken(
@@ -45,7 +50,16 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
         controllerFuture.addListener(
             { mediaController = controllerFuture.get() }, MoreExecutors.directExecutor()
         )
+        // Start Python
+        if (! Python.isStarted()) {
+            Python.start(AndroidPlatform(applicationContext))
+        }
+        val py = Python.getInstance()
+        val module = py.getModule("main")
+        val result = module.callAttr("main").toJava(String::class.java)
+        Log.i("PYTHON", result)
 
+        // Look for song files in background
         scope.launch {
             for (song in getLocalMediaFiles(applicationContext)) {
                 repo.insertSong(song)
