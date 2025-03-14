@@ -25,8 +25,8 @@ interface SongDao {
     @Insert
     suspend fun insert(song: Song): Long
 
-    @Delete
-    suspend fun delete(song: Song)
+    @Query("DELETE FROM song WHERE path = :path")
+    suspend fun delete(path: Long)
 
     @Query("SELECT * FROM song")
     fun getAllSongs(): Flow<List<Song>>
@@ -140,6 +140,9 @@ class MusicRepository(
             song.toBasicSong(artistId, albumId)
         )
         return songId
+    }
+    suspend fun deleteSong(song: Long) {
+        songDao.delete(song)
     }
     fun getSongDetails(song: Song): Flow<SongWithDetails> {
         return flow {

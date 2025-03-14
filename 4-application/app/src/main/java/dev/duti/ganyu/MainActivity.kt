@@ -46,18 +46,6 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
         controllerFuture.addListener(
             { mediaController = controllerFuture.get() }, MoreExecutors.directExecutor()
         )
-        // Start Python
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(applicationContext))
-        }
-        val py = Python.getInstance()
-        val module = py.getModule("main")
-        val result = module.callAttr("main").toJava(String::class.java)
-        Log.i("PYTHON", result)
-
-
-
-
         val permissionRequester = PermissionRequester(this)
         permissionRequester.requestPermissions(listOf(Manifest.permission.READ_MEDIA_AUDIO), this)
     }
@@ -65,9 +53,6 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
     @UnstableApi
     fun completeStart() {
         myAppCtx = MyAppContext(applicationContext, repo, mediaController)
-        scope.launch {
-            myAppCtx.reloadMusicDb()
-        }
         setContent { GanyuTheme { MainView(myAppCtx) } }
     }
 

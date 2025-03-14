@@ -2,6 +2,7 @@ package dev.duti.ganyu.ui.songs
 
 import android.content.ContentUris
 import android.provider.MediaStore
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,21 +31,22 @@ import androidx.media3.common.util.UnstableApi
 import dev.duti.ganyu.MyAppContext
 import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.data.SongWithDetails
+import kotlinx.coroutines.launch
 
 @UnstableApi
 @Composable
 fun MusicPlayerScreen(ctx: MyAppContext, modifier: Modifier) {
     var currentSong by remember { mutableStateOf<SongWithDetails?>(null) }
 
+    val scope = rememberCoroutineScope()
 
     val refreshTrigger = remember { mutableIntStateOf(0) }
 
     val songs = produceState<List<Song>>(initialValue = emptyList(), refreshTrigger.intValue) {
+        Log.i("MUSIC_PLAYER", "Reloading music database")
         ctx.reloadMusicDb()
         ctx.repo.getAllSongs().collect { value = it }
     }
-
-
 
     ctx.player.setMediaItems(songs.value.map { fullSong ->
         MediaItem.fromUri(
@@ -62,6 +65,9 @@ fun MusicPlayerScreen(ctx: MyAppContext, modifier: Modifier) {
                     currentSong = fullSong
                     ctx.player.seekTo(idx, 0)
                     ctx.player.prepare()
+                    scope.launch {
+                        ctx.play(currentSong!!.path)
+                    }
                 }
             }
 
