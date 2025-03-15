@@ -36,6 +36,7 @@ data class Artist(
     val art: String? = null
     // TODO: Metadata on artist such as youtube channel
 )
+
 @Entity
 data class Playlist(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

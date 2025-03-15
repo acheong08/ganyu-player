@@ -122,7 +122,7 @@ class MusicRepository(
     fun getAllSongs() = songDao.getAllSongs()
     suspend fun insertSong(song: SongWithDetails): Long {
         val existingSong = songDao.getSongByPath(song.path).first()
-        if ( existingSong != null) {
+        if (existingSong != null) {
             return existingSong.id
         }
         val artistId =
@@ -141,18 +141,28 @@ class MusicRepository(
         )
         return songId
     }
+
     suspend fun deleteSong(song: Long) {
         songDao.delete(song)
     }
+
     fun getSongDetails(song: Song): Flow<SongWithDetails> {
         return flow {
 
             val artist = artistDao.getById(song.artistId).first()
             val album = if (song.albumId != null) albumDao.getById(song.albumId).first() else null
-            emit(SongWithDetails(song.path, song.title,
-                album?.let { AlbumWithDetails.fromBasicAlbum(it, artist) }, song.duration, artist))
+            emit(
+                SongWithDetails(
+                    song.path,
+                    song.title,
+                    album?.let { AlbumWithDetails.fromBasicAlbum(it, artist) },
+                    song.duration,
+                    artist
+                )
+            )
         }
     }
+
     fun getAllArtists() = artistDao.getAllArtists()
     fun getAllAlbums() = albumDao.getAllAlbums()
 }

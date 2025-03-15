@@ -1,4 +1,3 @@
 package dev.duti.ganyu.storage
 
-class ScriptDatabase {
-}
+class ScriptDatabase

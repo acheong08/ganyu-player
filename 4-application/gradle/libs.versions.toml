@@ -15,6 +15,7 @@ media3Exoplayer = "1.5.1"
 media3Ui = "1.5.1"
 media3Session = "1.5.1"
 playServicesCastFramework = "22.0.0"
+jaudiotagger = "3.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +44,7 @@ androidx-media = { group = "androidx.media", name = "media", version = "1.7.0" }
 exoplayer-media-session = { group = "com.google.android.exoplayer", name = "extension-mediasession", version = "2.19.1" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3Session" }
 play-services-cast-framework = { group = "com.google.android.gms", name = "play-services-cast-framework", version.ref = "playServicesCastFramework" }
+jaudiotagger = { group = "net.jthink", name = "jaudiotagger", version.ref = "jaudiotagger" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

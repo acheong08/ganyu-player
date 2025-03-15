@@ -13,6 +13,7 @@ interface PermissionRequestCallback {
     fun onAllPermissionsGranted()
     fun onPermissionsDenied(redirectToSettings: Boolean)
 }
+
 class PermissionRequester(private val activity: ComponentActivity) {
     private lateinit var callback: PermissionRequestCallback
     private var permissionsToRequest: List<String> = emptyList()

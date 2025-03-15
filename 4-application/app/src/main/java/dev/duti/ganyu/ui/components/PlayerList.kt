@@ -1,4 +1,4 @@
-package dev.duti.ganyu.ui.songs
+package dev.duti.ganyu.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,7 +26,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +37,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.duti.ganyu.MyAppContext
 import dev.duti.ganyu.R
-import dev.duti.ganyu.data.Song
 import dev.duti.ganyu.data.SongWithDetails
 import kotlinx.coroutines.delay
 
@@ -84,7 +82,7 @@ fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
 
 @Composable
 fun SongList(
-    songs: List<Song>,
+    songs: List<SongWithDetails>,
     ctx: MyAppContext,
     padding: PaddingValues,
     onSongClick: (idx: Int, song: SongWithDetails) -> Unit
@@ -95,8 +93,7 @@ fun SongList(
             .fillMaxSize(), contentPadding = PaddingValues(8.dp)
     ) {
         itemsIndexed(songs) { idx, song ->
-            val fullSong = ctx.repo.getSongDetails(song).collectAsState(SongWithDetails.empty())
-            SongItem(song = fullSong.value, onItemClick = { onSongClick(idx, fullSong.value) })
+            SongItem(song = song, onItemClick = { onSongClick(idx, song) })
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
         }
     }

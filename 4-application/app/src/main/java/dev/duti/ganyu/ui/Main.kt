@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.media3.common.util.UnstableApi
 import dev.duti.ganyu.MyAppContext
-import dev.duti.ganyu.ui.songs.MusicPlayerScreen
+import dev.duti.ganyu.ui.screens.MusicPlayerScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
