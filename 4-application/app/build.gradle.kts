@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.kotlin.compose)
   id("com.google.devtools.ksp")
   id("com.chaquo.python")
+  kotlin("plugin.serialization")
 }
 
 android {
@@ -77,6 +78,7 @@ dependencies {
   debugImplementation(libs.androidx.ui.test.manifest)
   implementation(libs.androidx.room.runtime)
   implementation(libs.exoplayer.media.session)
+  implementation(libs.kotlinx.serialization.json)
 
   // implementation(libs.jaudiotagger)
   ksp(libs.androidx.room.compiler)
