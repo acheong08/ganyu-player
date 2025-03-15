@@ -19,14 +19,19 @@ import dev.duti.ganyu.data.Artist
 import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.storage.MusicRepository
 import dev.duti.ganyu.storage.getLocalMediaFiles
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: MediaController) {
     private val pyModule: PyObject
-    private var songListCache: List<SongWithDetails>? = null
-    val playerState = mutableIntStateOf(Player.STATE_IDLE)
+    var songs = mutableStateOf<List<SongWithDetails>>(listOf())
     var currentSong = mutableStateOf<SongWithDetails?>(null)
-    var currentSongIndex = mutableIntStateOf(0)
+    private var currentSongIndex = mutableIntStateOf(0)
+
+    val scope = CoroutineScope(Dispatchers.Main)
 
     init {
         if (!Python.isStarted()) {
@@ -38,9 +43,33 @@ class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: Medi
         player.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 Log.i("PLAYER", "Player state changed $state")
-                playerState.intValue = state
+                if (state == Player.STATE_ENDED) {
+                    play(nextSongIdx())
+                }
             }
         })
+
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                songs.value = getLocalMediaFiles(ctx)
+            }
+        }
+    }
+
+    fun nextSongIdx(): Int {
+        return (currentSongIndex.intValue + 1) % songs.value.size
+    }
+
+    fun play(idx: Int) {
+        currentSong.value = songs.value[idx]
+        currentSongIndex.intValue = idx
+        // Get URI via id
+        val uri = ContentUris.withAppendedId(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentSong.value!!.path
+        )
+        player.setMediaItem(MediaItem.fromUri(uri))
+        player.prepare()
+        player.play()
     }
 
     suspend fun download(id: String) {
@@ -106,20 +135,4 @@ class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: Medi
         }
     }
 
-    fun getSongs(): List<SongWithDetails> {
-        if (songListCache == null) {
-            songListCache = getLocalMediaFiles(ctx)
-        }
-        return songListCache!!
-    }
-
-    fun play(song: SongWithDetails, idx: Int) {
-        currentSong.value = song
-        currentSongIndex.intValue = idx
-        // Get URI via id
-        val uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path)
-        player.setMediaItem(MediaItem.fromUri(uri))
-        player.prepare()
-        player.play()
-    }
 }
