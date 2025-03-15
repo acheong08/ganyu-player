@@ -44,7 +44,11 @@ class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: Medi
             override fun onPlaybackStateChanged(state: Int) {
                 Log.i("PLAYER", "Player state changed $state")
                 if (state == Player.STATE_ENDED) {
-                    play(nextSongIdx())
+                    val nextIdx = nextSongIdx()
+                    if (nextIdx == -1) {
+                        return
+                    }
+                    play(nextIdx)
                 }
             }
         })
@@ -57,6 +61,7 @@ class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: Medi
     }
 
     fun nextSongIdx(): Int {
+        // TODO: Get settings for different options (e.g. Random, loop)
         return (currentSongIndex.intValue + 1) % songs.value.size
     }
 

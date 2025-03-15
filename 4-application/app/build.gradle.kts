@@ -45,6 +45,7 @@ chaquopy {
     pip {
       install("git+https://github.com/yt-dlp/yt-dlp")
       install("mutagen")
+      install("pytubefix")
     }
   }
 }
