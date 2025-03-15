@@ -1,6 +1,9 @@
 package dev.duti.ganyu.data
 
 import kotlinx.serialization.Serializable
+import retrofit2.Call
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 @Serializable
 data class ShortVideo(
@@ -24,3 +27,9 @@ data class VideoThumbnail(
     val width: Int,
     val height: Int
 )
+
+
+interface YoutubeApiService {
+    @GET("api/v1/search")
+    suspend fun searchVideos(@Query("q") query: String): List<ShortVideo>
+}

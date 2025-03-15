@@ -1,10 +1,11 @@
 package dev.duti.ganyu
 
 import dev.duti.ganyu.data.ShortVideo
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
-
-import org.junit.Assert.*
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -50,5 +51,14 @@ class ExampleUnitTest {
         val shortVideo = Json.decodeFromString<ShortVideo>(jsonString)
         assertEquals(811, shortVideo.lengthSeconds)
         assertEquals("maxres", shortVideo.videoThumbnails[0].quality)
+    }
+
+    @Test
+    fun search_api() = runTest {
+        val videos = YoutubeApiClient.apiService.searchVideos("9Lana Propose")
+
+        // Assertions
+        assertNotNull(videos)
+        assertEquals("XPLkkdMFmco", videos[0].videoId)
     }
 }

@@ -79,6 +79,9 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation(libs.exoplayer.media.session)
   implementation(libs.kotlinx.serialization.json)
+  implementation(libs.retrofit)
+  implementation(libs.converter.gson) // For Gson support
+  testImplementation(libs.kotlinx.coroutines.test)
 
   // implementation(libs.jaudiotagger)
   ksp(libs.androidx.room.compiler)
