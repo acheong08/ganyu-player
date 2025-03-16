@@ -1,6 +1,7 @@
 package dev.duti.ganyu
 
 import dev.duti.ganyu.data.ShortVideo
+import dev.duti.ganyu.data.YoutubeApiClient
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
@@ -12,12 +13,7 @@ import org.junit.Test
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleUnitTest {
-    @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
-    }
-
+class ApiUnitTest {
     @Test
     fun youtube_parsing() {
         val jsonString = """
@@ -55,10 +51,18 @@ class ExampleUnitTest {
 
     @Test
     fun search_api() = runTest {
-        val videos = YoutubeApiClient.apiService.searchVideos("9Lana Propose")
+        val videos = YoutubeApiClient.searchVideos("9Lana Propose")
 
         // Assertions
         assertNotNull(videos)
         assertEquals("XPLkkdMFmco", videos[0].videoId)
+    }
+
+    @Test
+    fun login() = runTest {
+        val successfulLogin = YoutubeApiClient.loginAndGetCookies("music", "music")
+        assertNotNull(successfulLogin)
+        val failedLogin = YoutubeApiClient.loginAndGetCookies("blah", "blah")
+        assertEquals(null, failedLogin)
     }
 }
