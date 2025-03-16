@@ -1,10 +1,7 @@
 package dev.duti.ganyu.ui
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
@@ -14,7 +11,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -24,13 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
 import androidx.media3.common.util.UnstableApi
 import dev.duti.ganyu.MyAppContext
+import dev.duti.ganyu.ui.components.YoutubeSearchScreen
 import dev.duti.ganyu.ui.screens.MusicPlayerScreen
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @UnstableApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,25 +65,8 @@ fun MainView(ctx: MyAppContext) {
                     MusicPlayerScreen(ctx, modifier = Modifier.padding(innerPadding))
                 }
 
-                Screens.EXPLORE_MUSIC -> {
-                    var text by remember { mutableStateOf("") }
-                    // Testing text input to download music
-                    Column(modifier = Modifier.padding(innerPadding)) {
-                        TextField(
-                            value = text,
-                            onValueChange = { text = it },
-                            label = { Text("Enter URL") },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(onDone = {
-                                scope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        ctx.download(text)
-                                    }
-                                }
-                            })
-                        )
-                    }
-
+                Screens.SEARCH -> {
+                    YoutubeSearchScreen(Modifier.padding(innerPadding))
                 }
 
                 else -> Text(text = screen.toString(), modifier = Modifier.padding(innerPadding))

@@ -16,7 +16,8 @@ enum class Screens {
     SONGS,
     MY_SCRIPTS,
     EXPLORE_SCRIPTS,
-    EXPLORE_MUSIC
+    SUBSCRIPTIONS,
+    SEARCH
 }
 
 @Composable

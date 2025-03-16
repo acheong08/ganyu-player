@@ -66,7 +66,11 @@ object YoutubeApiClient {
         RetrofitClient.retrofit.create(YoutubeApiService::class.java)
     }
 
-    suspend fun searchVideos(q: String) = apiService.searchVideos(q)
+    suspend fun searchVideos(q: String): List<ShortVideo> {
+        return apiService.searchVideos(q).filter { vid ->
+            vid.lengthSeconds != 0
+        }
+    }
 
     suspend fun loginAndGetCookies(email: String, password: String): String? {
         val resp = apiService.login(email, password)
