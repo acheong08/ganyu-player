@@ -11,13 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 enum class Screens {
-    ARTISTS,
-    PLAYLISTS,
     SONGS,
-    MY_SCRIPTS,
-    EXPLORE_SCRIPTS,
     SUBSCRIPTIONS,
-    SEARCH
+    SEARCH,
+    DOWNLOADING
 }
 
 @Composable

@@ -1,5 +1,9 @@
 package dev.duti.ganyu.ui
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,8 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import dev.duti.ganyu.MyAppContext
+import dev.duti.ganyu.ui.components.MusicSearchResults
 import dev.duti.ganyu.ui.components.YoutubeSearchScreen
 import dev.duti.ganyu.ui.screens.MusicPlayerScreen
 import kotlinx.coroutines.launch
@@ -43,7 +50,6 @@ fun MainView(ctx: MyAppContext) {
             }
         }, drawerState = drawerState
     ) {
-        // Screen content
 
         Scaffold(
             modifier = Modifier.fillMaxSize(), topBar = {
@@ -60,16 +66,30 @@ fun MainView(ctx: MyAppContext) {
                         }) { Icon(Icons.Default.Menu, contentDescription = "Menu") }
                 })
             }) { innerPadding ->
+            val modifier = Modifier.padding(
+                PaddingValues(
+                    top = maxOf(innerPadding.calculateTopPadding() - 8.dp, 0.dp), // Reduce top padding
+                    bottom = innerPadding.calculateBottomPadding(),
+                    start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
+                    end = innerPadding.calculateEndPadding(LocalLayoutDirection.current)
+                )
+            )
             when (screen) {
                 Screens.SONGS -> {
-                    MusicPlayerScreen(ctx, modifier = Modifier.padding(innerPadding))
+                    MusicPlayerScreen(ctx, modifier = modifier)
                 }
 
                 Screens.SEARCH -> {
-                    YoutubeSearchScreen(Modifier.padding(innerPadding))
+                    YoutubeSearchScreen(ctx, modifier)
                 }
 
-                else -> Text(text = screen.toString(), modifier = Modifier.padding(innerPadding))
+                Screens.DOWNLOADING -> {
+                    Column(modifier = modifier) {
+                        MusicSearchResults(ctx.downloading, {}, modifier = Modifier.fillMaxSize())
+                    }
+                }
+
+                else -> Text(text = screen.toString(), modifier = modifier)
             }
         }
     }
