@@ -43,6 +43,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Locale
 
+const val TAG = "YOUTUBE_COMPOSE"
+
 @Composable
 fun MusicSearchResults(
     videos: List<ShortVideo>, onVideoClick: (ShortVideo) -> Unit, modifier: Modifier = Modifier
@@ -54,7 +56,7 @@ fun MusicSearchResults(
             val video = videos[videoIdx]
             val thumbnail = video.videoThumbnails.find { it.quality == "medium" }
 
-            Log.i("YT_SEARCH", thumbnail.toString())
+            Log.i(TAG, thumbnail.toString())
 
             Card(
                 modifier = Modifier

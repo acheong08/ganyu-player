@@ -27,6 +27,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
+const val TAG = "APP_CONTEXT"
+
 class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: MediaController) {
     private val pyModule: PyObject
     var songs = mutableStateOf<List<SongWithDetails>>(listOf())
@@ -44,10 +46,8 @@ class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: Medi
         }
         val py = Python.getInstance()
         pyModule = py.getModule("main")
-        Log.i("PYTHON", pyModule.callAttr("main").toString())
         player.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
-                Log.i("PLAYER", "Player state changed $state")
                 if (state == Player.STATE_ENDED) {
                     val nextIdx = nextSongIdx()
                     if (nextIdx == -1) {
@@ -83,6 +83,7 @@ class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: Medi
     }
 
     suspend fun download(video: ShortVideo) {
+        Log.i(TAG, "Youtube download started")
         // Add to download queue
         downloading.add(video)
         try {
@@ -138,14 +139,12 @@ class MyAppContext(val ctx: Context, val repo: MusicRepository, val player: Medi
             // Insert song into database
             repo.insertSong(song)
 
-            Log.i("PYTHON", "Downloaded ${video.videoId} to $uri")
-
             // Delete the temporary file
             tempFile.delete()
 
         } catch (e: Exception) {
+            Log.e(TAG, "Youtube download failed: ${e.toString()}")
             failedDownloads.add(video)
-            Log.e("PYTHON", "Download failed", e)
         } finally {
             downloading.remove(video)
         }
