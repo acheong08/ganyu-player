@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import dev.duti.ganyu.data.ShortVideo
@@ -70,7 +71,12 @@ class MyAppContext(val ctx: Context, val player: MediaController) {
         val uri = ContentUris.withAppendedId(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentSong.value!!.path
         )
-        player.setMediaItem(MediaItem.fromUri(uri))
+        player.setMediaItem(
+            MediaItem.Builder().setUri(uri).setMediaMetadata(
+                MediaMetadata.Builder().setTitle(currentSong.value!!.title)
+                    .setArtist(currentSong.value!!.artist.name).build()
+            ).build()
+        )
         player.prepare()
         player.play()
     }

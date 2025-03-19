@@ -19,15 +19,15 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     private lateinit var mediaController: MediaController
     private lateinit var myAppCtx: MyAppContext
-//   private lateinit var repo: MusicRepository
+    // private lateinit var repo: MusicRepository
 
-    //    private lateinit var db: MusicDatabase
+    // private lateinit var db: MusicDatabase
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // Initialize database
-//        db = MusicDatabase.getDatabase(applicationContext)
-//        repo = MusicRepository(db.songDao(), db.albumDao(), db.artistDao())
+        // db = MusicDatabase.getDatabase(applicationContext)
+        // repo = MusicRepository(db.songDao(), db.albumDao(), db.artistDao())
         // Media player service
         controllerFuture = MediaController.Builder(
             applicationContext, SessionToken(
