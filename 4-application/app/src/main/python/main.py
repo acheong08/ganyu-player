@@ -36,6 +36,7 @@ def download(yt_id: str, tmp_dir: str) -> tuple[str, str, str, int, str]:
         tags["\xa9nam"] = info["title"]
         tags["\xa9ART"] = info["uploader"]
         tags["\xa9alb"] = info.get("album", "")
+        tags["\xa9cmt"] = yt_id
 
         tags.save(file_path)
         return (
