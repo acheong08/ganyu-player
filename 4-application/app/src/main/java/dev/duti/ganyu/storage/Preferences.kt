@@ -24,4 +24,10 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             preferences[PreferencesKeys.INVIDIOUS_COOKIE]
         }.first()
     }
+
+    suspend fun deleteCookie() {
+        dataStore.edit { preferences ->
+            preferences.remove(PreferencesKeys.INVIDIOUS_COOKIE)
+        }
+    }
 }

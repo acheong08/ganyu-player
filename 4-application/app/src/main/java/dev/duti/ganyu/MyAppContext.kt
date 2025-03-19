@@ -21,6 +21,9 @@ import dev.duti.ganyu.utils.saveYtDownload
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Cookie
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import java.util.Date
 
 const val TAG = "APP_CONTEXT"
 
@@ -54,12 +57,18 @@ class MyAppContext(val ctx: Context, val player: MediaController, val settingsRe
             songs.value = getLocalMediaFiles(ctx)
         }
         scope.launch {
-            val ivCookie = settingsRepository.getCookie()
-            if (ivCookie == null) {
+            val ivCookieString = settingsRepository.getCookie()
+            if (ivCookieString == null) {
                 return@launch
             }
             Log.i(TAG, "Invidious cookies loaded from memory")
-            YoutubeApiClient.setCookies(ivCookie)
+            val cookie = Cookie.parse("https://iv.duti.dev".toHttpUrl(), ivCookieString)
+            if (cookie == null || cookie.expiresAt < Date().time) {
+                Log.i(TAG, "Invidious cookie expired")
+                settingsRepository.deleteCookie()
+                return@launch
+            }
+            YoutubeApiClient.setCookies(ivCookieString)
             ivIsLoggedIn.value = true
         }
     }
