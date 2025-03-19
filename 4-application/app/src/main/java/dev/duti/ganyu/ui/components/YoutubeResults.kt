@@ -56,8 +56,6 @@ fun MusicSearchResults(
             val video = videos[videoIdx]
             val thumbnail = video.videoThumbnails.find { it.quality == "medium" }
 
-            Log.i(TAG, thumbnail.toString())
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -143,9 +141,5 @@ fun YoutubeSearchScreen(ctx: MyAppContext, modifier: Modifier) {
             },
             modifier = Modifier.fillMaxSize()
         )
-    }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
     }
 }

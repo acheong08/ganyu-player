@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun MusicPlayerScreen(ctx: MyAppContext, modifier: Modifier) {
 
+    ctx.refreshSongList()
+
     val scope = rememberCoroutineScope()
 
     Scaffold(modifier = modifier) { padding ->

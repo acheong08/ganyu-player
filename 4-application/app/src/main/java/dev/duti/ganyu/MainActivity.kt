@@ -12,27 +12,22 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import dev.duti.ganyu.storage.MusicDatabase
-import dev.duti.ganyu.storage.MusicRepository
 import dev.duti.ganyu.ui.MainView
 import dev.duti.ganyu.ui.theme.GanyuTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 
 class MainActivity : ComponentActivity(), PermissionRequestCallback {
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     private lateinit var mediaController: MediaController
     private lateinit var myAppCtx: MyAppContext
-    private lateinit var repo: MusicRepository
+//   private lateinit var repo: MusicRepository
 
-    private val scope = CoroutineScope(Dispatchers.Main)
-    private lateinit var db: MusicDatabase
+    //    private lateinit var db: MusicDatabase
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // Initialize database
-        db = MusicDatabase.getDatabase(applicationContext)
-        repo = MusicRepository(db.songDao(), db.albumDao(), db.artistDao())
+//        db = MusicDatabase.getDatabase(applicationContext)
+//        repo = MusicRepository(db.songDao(), db.albumDao(), db.artistDao())
         // Media player service
         controllerFuture = MediaController.Builder(
             applicationContext, SessionToken(
@@ -48,7 +43,7 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
 
     @UnstableApi
     fun completeStart() {
-        myAppCtx = MyAppContext(applicationContext, repo, mediaController)
+        myAppCtx = MyAppContext(applicationContext, mediaController)
         setContent { GanyuTheme { MainView(myAppCtx) } }
     }
 
@@ -74,6 +69,6 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
     override fun onDestroy() {
         MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
-        db.close()
+//        db.close()
     }
 }

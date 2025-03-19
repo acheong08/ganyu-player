@@ -31,6 +31,7 @@ import dev.duti.ganyu.MyAppContext
 import dev.duti.ganyu.ui.components.MusicSearchResults
 import dev.duti.ganyu.ui.components.YoutubeSearchScreen
 import dev.duti.ganyu.ui.screens.MusicPlayerScreen
+import dev.duti.ganyu.ui.screens.YoutubeSubscriptions
 import kotlinx.coroutines.launch
 
 @UnstableApi
@@ -68,7 +69,10 @@ fun MainView(ctx: MyAppContext) {
             }) { innerPadding ->
             val modifier = Modifier.padding(
                 PaddingValues(
-                    top = maxOf(innerPadding.calculateTopPadding() - 8.dp, 0.dp), // Reduce top padding
+                    top = maxOf(
+                        innerPadding.calculateTopPadding() - 8.dp,
+                        0.dp
+                    ), // Reduce top padding
                     bottom = innerPadding.calculateBottomPadding(),
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
                     end = innerPadding.calculateEndPadding(LocalLayoutDirection.current)
@@ -89,7 +93,10 @@ fun MainView(ctx: MyAppContext) {
                     }
                 }
 
-                else -> Text(text = screen.toString(), modifier = modifier)
+                Screens.SUBSCRIPTIONS -> {
+                    YoutubeSubscriptions(ctx, modifier)
+                }
+
             }
         }
     }

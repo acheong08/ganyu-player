@@ -9,6 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Query
@@ -33,6 +34,11 @@ data class VideoThumbnail(
     val quality: String, val url: String, val width: Int, val height: Int
 )
 
+@Serializable
+data class YoutubeFeedResp(
+    val videos: List<ShortVideo>
+)
+
 
 interface YoutubeApiService {
     @GET("api/v1/search")
@@ -46,6 +52,13 @@ interface YoutubeApiService {
         @Field("password") password: String,
         @Field("action") action: String = "signin"
     ): Response<ResponseBody>
+
+    @GET("api/v1/auth/feed")
+    suspend fun getSubscriptions(
+        @Header("Cookie") authCookie: String,
+        @Query("max_results") maxResults: Int = 10,
+        @Query("page") page: Int = 1
+    ): YoutubeFeedResp
 }
 
 object RetrofitClient {
@@ -65,17 +78,37 @@ object YoutubeApiClient {
     private val apiService: YoutubeApiService by lazy {
         RetrofitClient.retrofit.create(YoutubeApiService::class.java)
     }
+    private var cookies: String? = null
+
+    private fun filterLenNotZero(vid: ShortVideo): Boolean {
+        return vid.lengthSeconds != 0
+    }
 
     suspend fun searchVideos(q: String): List<ShortVideo> {
-        return apiService.searchVideos(q).filter { vid ->
-            vid.lengthSeconds != 0
+        return apiService.searchVideos(q).filter() { vid -> filterLenNotZero(vid) }
+    }
+
+    suspend fun getSubscriptions(maxResults: Int = 20, page: Int = 1): List<ShortVideo> {
+        if (cookies == null) {
+            throw Exception("Invidious not authenticated. Remember to login")
         }
+        return apiService.getSubscriptions(
+            cookies!!,
+            maxResults,
+            page
+        ).videos.filter { vid -> filterLenNotZero(vid) }
+    }
+
+    fun setCookies(cookie: String) {
+        cookies = cookie
     }
 
     suspend fun loginAndGetCookies(email: String, password: String): String? {
         val resp = apiService.login(email, password)
         if (resp.code() == 302) {
-            return resp.headers().values("set-cookie").first()
+            val cookie = resp.headers().values("set-cookie").first()
+            setCookies(cookie)
+            return cookie
         }
         return null
     }
