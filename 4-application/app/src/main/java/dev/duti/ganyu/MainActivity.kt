@@ -2,16 +2,21 @@ package dev.duti.ganyu
 
 import android.Manifest
 import android.content.ComponentName
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Text
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import dev.duti.ganyu.storage.SettingsRepository
 import dev.duti.ganyu.ui.MainView
 import dev.duti.ganyu.ui.theme.GanyuTheme
 
@@ -19,6 +24,7 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     private lateinit var mediaController: MediaController
     private lateinit var myAppCtx: MyAppContext
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     // private lateinit var repo: MusicRepository
 
     // private lateinit var db: MusicDatabase
@@ -43,7 +49,7 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
 
     @UnstableApi
     fun completeStart() {
-        myAppCtx = MyAppContext(applicationContext, mediaController)
+        myAppCtx = MyAppContext(applicationContext, mediaController, SettingsRepository(dataStore))
         setContent { GanyuTheme { MainView(myAppCtx) } }
     }
 

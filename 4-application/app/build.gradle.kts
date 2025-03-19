@@ -81,9 +81,10 @@ dependencies {
   implementation(libs.retrofit)
   implementation(libs.coil.compose)
   implementation(libs.coil.network)
-  implementation(libs.converter.gson) // For Gson support
+  implementation(libs.converter.gson)
+
+  implementation(libs.androidx.datastore.preferences)
   testImplementation(libs.kotlinx.coroutines.test)
 
-  // implementation(libs.jaudiotagger)
   ksp(libs.androidx.room.compiler)
 }

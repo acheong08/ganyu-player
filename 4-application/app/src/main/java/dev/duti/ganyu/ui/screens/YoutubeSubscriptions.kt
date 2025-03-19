@@ -38,7 +38,6 @@ import dev.duti.ganyu.data.YoutubeApiClient
 import dev.duti.ganyu.ui.components.MusicSearchResults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun YoutubeSubscriptions(ctx: MyAppContext, modifier: Modifier) {
@@ -47,9 +46,9 @@ fun YoutubeSubscriptions(ctx: MyAppContext, modifier: Modifier) {
     val scope = rememberCoroutineScope()
 
     Column(modifier = modifier) {
-        if (ctx.ivLoggedIn.value) {
+        if (ctx.ivIsLoggedIn.value) {
 
-            LaunchedEffect(ctx.ivLoggedIn.value, currentPage) {
+            LaunchedEffect(ctx.ivIsLoggedIn.value, currentPage) {
                 scope.launch {
                     val newVideos = YoutubeApiClient.getSubscriptions(page = currentPage)
                     subVideos = if (currentPage == 1) newVideos else subVideos + newVideos
@@ -70,15 +69,17 @@ fun YoutubeSubscriptions(ctx: MyAppContext, modifier: Modifier) {
             }
         } else {
             // Request login
-            LoginScreen {
-                ctx.ivLoggedIn.value = true
+            LoginScreen { cookie ->
+                scope.launch {
+                    ctx.ivLogin(cookie)
+                }
             }
         }
     }
 }
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
+fun LoginScreen(onLoginSuccess: (cookie: String) -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf("") }
@@ -96,13 +97,16 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 
     fun handleLogin() {
         focusManager.clearFocus()
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
             try {
-                YoutubeApiClient.loginAndGetCookies(username, password)
-                    .let { withContext(Dispatchers.IO) { it } }
-                onLoginSuccess()
+                val cookie = YoutubeApiClient.loginAndGetCookies(username, password)
+                if (cookie == null) {
+                    loginError = "Invalid credentials"
+                    return@launch
+                }
+                onLoginSuccess(cookie)
             } catch (e: Exception) {
-                loginError = "Invalid credentials"
+                loginError = "An unknown error occurred"
             }
         }
     }

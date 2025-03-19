@@ -13,6 +13,8 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import dev.duti.ganyu.data.ShortVideo
 import dev.duti.ganyu.data.SongWithDetails
+import dev.duti.ganyu.data.YoutubeApiClient
+import dev.duti.ganyu.storage.SettingsRepository
 import dev.duti.ganyu.utils.PyModule
 import dev.duti.ganyu.utils.getLocalMediaFiles
 import dev.duti.ganyu.utils.saveYtDownload
@@ -22,13 +24,13 @@ import kotlinx.coroutines.launch
 
 const val TAG = "APP_CONTEXT"
 
-class MyAppContext(val ctx: Context, val player: MediaController) {
+class MyAppContext(val ctx: Context, val player: MediaController, val settingsRepository: SettingsRepository) {
     var songs = mutableStateOf<List<SongWithDetails>>(listOf())
     var currentSong = mutableStateOf<SongWithDetails?>(null)
     private var currentSongIndex = mutableIntStateOf(0)
     private val pyModule = PyModule(ctx)
 
-    var ivLoggedIn = mutableStateOf(false)
+    var ivIsLoggedIn = mutableStateOf(false)
 
     val downloading = mutableStateListOf<ShortVideo>()
     private val failedDownloads = mutableStateListOf<ShortVideo>()
@@ -51,6 +53,21 @@ class MyAppContext(val ctx: Context, val player: MediaController) {
         scope.launch {
             songs.value = getLocalMediaFiles(ctx)
         }
+        scope.launch {
+            val ivCookie = settingsRepository.getCookie()
+            if (ivCookie == null) {
+                return@launch
+            }
+            Log.i(TAG, "Invidious cookies loaded from memory")
+            YoutubeApiClient.setCookies(ivCookie)
+            ivIsLoggedIn.value = true
+        }
+    }
+
+    suspend fun ivLogin(cookie: String) {
+        YoutubeApiClient.setCookies(cookie)
+        ivIsLoggedIn.value = true
+        settingsRepository.saveIvCookie(cookie)
     }
 
     fun refreshSongList() {
