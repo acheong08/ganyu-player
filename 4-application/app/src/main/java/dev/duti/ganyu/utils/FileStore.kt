@@ -1,4 +1,4 @@
-package dev.duti.ganyu.storage
+package dev.duti.ganyu.utils
 
 import android.Manifest
 import android.content.Context
