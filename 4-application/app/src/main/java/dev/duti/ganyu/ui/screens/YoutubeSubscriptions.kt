@@ -7,12 +7,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,7 +25,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -32,7 +36,6 @@ import dev.duti.ganyu.MyAppContext
 import dev.duti.ganyu.data.ShortVideo
 import dev.duti.ganyu.data.YoutubeApiClient
 import dev.duti.ganyu.ui.components.MusicSearchResults
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -80,10 +83,35 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Focus requesters for text fields
+    val usernameFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+
+    // Auto-focus username field on launch
+    LaunchedEffect(Unit) {
+        usernameFocusRequester.requestFocus()
+    }
+
+    fun handleLogin() {
+        focusManager.clearFocus()
+        coroutineScope.launch {
+            try {
+                YoutubeApiClient.loginAndGetCookies(username, password)
+                    .let { withContext(Dispatchers.IO) { it } }
+                onLoginSuccess()
+            } catch (e: Exception) {
+                loginError = "Invalid credentials"
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .imePadding(), // Handle keyboard overlap
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -94,32 +122,32 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(usernameFocusRequester),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(
+                onNext = { passwordFocusRequester.requestFocus() }
+            )
         )
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(passwordFocusRequester),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { handleLogin() }
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            focusManager.clearFocus()
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    YoutubeApiClient.loginAndGetCookies(username, password)
-                    withContext(Dispatchers.Main) {
-                        onLoginSuccess()
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        loginError = "Invalid credentials"
-                    }
-                }
-            }
-        }) {
+        Button(onClick = { handleLogin() }) {
             Text("Submit")
         }
     }
