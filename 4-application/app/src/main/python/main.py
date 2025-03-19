@@ -2,25 +2,10 @@
 import typing
 import yt_dlp
 from mutagen.mp4 import MP4
-from pytubefix import Search
 
 
 def main():
     return "Hello, World!"
-
-
-def search(query: str) -> list[dict[str, str | int]]:
-    results = Search(query).videos
-    return [
-        {
-            "title": result.title,
-            "artist": result.author,
-            "duration": result.length,
-            "id": result.video_id,
-            "thumbnail": result.thumbnail_url,
-        }
-        for result in results
-    ]
 
 
 # Download audio file with metadata
@@ -62,6 +47,6 @@ def download(yt_id: str, tmp_dir: str) -> tuple[str, str, str, int, str]:
         )
 
 
-if __name__ == "__main__":
-    # print(download("U8BlNEKq0r8", "/tmp/output"))
-    print(search("never gonna give you up"))
+# if __name__ == "__main__":
+# print(download("U8BlNEKq0r8", "/tmp/output"))
+# print(search("never gonna give you up"))
