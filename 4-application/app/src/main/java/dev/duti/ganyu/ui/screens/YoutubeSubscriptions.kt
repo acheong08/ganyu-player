@@ -1,7 +1,6 @@
 package dev.duti.ganyu.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,14 +54,11 @@ fun YoutubeSubscriptions(ctx: MyAppContext, modifier: Modifier) {
                 }
             }
             // Show subscriptions
-            Box(modifier = Modifier.weight(1f)) {
-                MusicSearchResults(subVideos, { vid ->
-                    scope.launch(Dispatchers.IO) {
-                        ctx.download(vid)
-                    }
-                }, modifier = Modifier.fillMaxSize())
-            }
-
+            MusicSearchResults(ctx, subVideos, { vid ->
+                scope.launch(Dispatchers.IO) {
+                    ctx.download(vid)
+                }
+            }, modifier = Modifier.weight(1f))
             // Pagination
             Button(onClick = { currentPage++ }) {
                 Text("Load More")

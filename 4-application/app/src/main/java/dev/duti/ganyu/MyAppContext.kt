@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
 import android.util.Log
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -27,8 +28,17 @@ import java.util.Date
 
 const val TAG = "APP_CONTEXT"
 
-class MyAppContext(val ctx: Context, val player: MediaController, val settingsRepository: SettingsRepository) {
+class MyAppContext(
+    val ctx: Context,
+    val player: MediaController,
+    val settingsRepository: SettingsRepository
+) {
     var songs = mutableStateOf<List<SongWithDetails>>(listOf())
+
+    val songsMap = derivedStateOf {
+        songs.value.associate { it.id to it }
+    }
+
     var currentSong = mutableStateOf<SongWithDetails?>(null)
     private var currentSongIndex = mutableIntStateOf(0)
     private val pyModule = PyModule(ctx)
@@ -100,7 +110,7 @@ class MyAppContext(val ctx: Context, val player: MediaController, val settingsRe
         player.setMediaItem(
             MediaItem.Builder().setUri(uri).setMediaMetadata(
                 MediaMetadata.Builder().setTitle(currentSong.value!!.title)
-                    .setArtist(currentSong.value!!.artist.name).build()
+                    .setArtist(currentSong.value!!.artist).build()
             ).build()
         )
         player.prepare()
@@ -108,6 +118,10 @@ class MyAppContext(val ctx: Context, val player: MediaController, val settingsRe
     }
 
     fun download(video: ShortVideo) {
+        if (songsMap.value.contains(video.videoId)) {
+            Log.i(TAG, "Video already downloaded, skipping.")
+            return
+        }
         Log.i(TAG, "Youtube download started")
         // Add to download queue
         downloading.add(video)

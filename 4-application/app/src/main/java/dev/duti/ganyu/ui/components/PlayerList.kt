@@ -70,7 +70,7 @@ fun SongItem(song: SongWithDetails, onItemClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = song.artist.name,
+                text = song.artist,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -131,7 +131,7 @@ fun CurrentSongDisplay(song: SongWithDetails, ctx: MyAppContext) {
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = song.artist.name,
+                text = song.artist,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

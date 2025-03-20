@@ -1,6 +1,6 @@
 package dev.duti.ganyu.ui.components
 
-import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -47,7 +47,10 @@ const val TAG = "YOUTUBE_COMPOSE"
 
 @Composable
 fun MusicSearchResults(
-    videos: List<ShortVideo>, onVideoClick: (ShortVideo) -> Unit, modifier: Modifier = Modifier
+    ctx: MyAppContext,
+    videos: List<ShortVideo>,
+    onVideoClick: (ShortVideo) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier, contentPadding = PaddingValues(8.dp)
@@ -60,7 +63,12 @@ fun MusicSearchResults(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(4.dp)
-                    .clickable { onVideoClick(video) }) {
+                    .clickable { onVideoClick(video) },
+                border = if (ctx.songsMap.value.contains(video.videoId)) BorderStroke(
+                    1.dp,
+                    Color.Green
+                ) else null
+            ) {
                 Row(
                     modifier = Modifier.padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -133,10 +141,11 @@ fun YoutubeSearchScreen(ctx: MyAppContext, modifier: Modifier) {
         )
 
         MusicSearchResults(
+            ctx,
             videos = searchResults,
-            onVideoClick = { id ->
+            onVideoClick = { vid ->
                 scope.launch(Dispatchers.IO) {
-                    ctx.download(id)
+                    ctx.download(vid)
                 }
             },
             modifier = Modifier.fillMaxSize()

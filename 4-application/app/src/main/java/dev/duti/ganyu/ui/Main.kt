@@ -89,7 +89,7 @@ fun MainView(ctx: MyAppContext) {
 
                 Screens.DOWNLOADING -> {
                     Column(modifier = modifier) {
-                        MusicSearchResults(ctx.downloading, {}, modifier = Modifier.fillMaxSize())
+                        MusicSearchResults(ctx, ctx.downloading, {}, modifier = Modifier.fillMaxSize())
                     }
                 }
 
