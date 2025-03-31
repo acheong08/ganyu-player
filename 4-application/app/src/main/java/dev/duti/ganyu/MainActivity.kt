@@ -75,6 +75,5 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
     override fun onDestroy() {
         MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
-//        db.close()
     }
 }
