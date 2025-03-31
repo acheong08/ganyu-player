@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -104,6 +106,9 @@ fun CurrentSongDisplay(song: SongWithDetails, ctx: MyAppContext) {
 
     val sliderPosition = remember { mutableFloatStateOf(0f) }
     val isPlaying = remember { mutableStateOf(ctx.player.isPlaying) }
+    if (ctx.currentSong.value == null) {
+        return
+    }
 
     LaunchedEffect(ctx.player) {
         while (true) {
@@ -148,7 +153,16 @@ fun CurrentSongDisplay(song: SongWithDetails, ctx: MyAppContext) {
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-
+        IconButton(
+            onClick =
+                {
+                    ctx.playPrev()
+                }) {
+            Icon(
+                imageVector = Icons.Default.SkipPrevious,
+                contentDescription = "Previous"
+            )
+        }
         IconButton(onClick = {
             if (ctx.player.isPlaying) {
                 ctx.player.pause()
@@ -162,5 +176,16 @@ fun CurrentSongDisplay(song: SongWithDetails, ctx: MyAppContext) {
                 contentDescription = if (isPlaying.value) "Pause" else "Play"
             )
         }
+        IconButton(
+            onClick =
+                {
+                    ctx.playNext()
+                }) {
+            Icon(
+                imageVector = Icons.Default.SkipNext,
+                contentDescription = "Next"
+            )
+        }
+
     }
 }

@@ -1,9 +1,7 @@
 package dev.duti.ganyu
 
 import androidx.media3.common.Player.COMMAND_SEEK_TO_NEXT
-import androidx.media3.common.Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM
 import androidx.media3.common.Player.COMMAND_SEEK_TO_PREVIOUS
-import androidx.media3.common.Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
@@ -41,10 +39,10 @@ class PlaybackService : MediaSessionService() {
                 .setAvailablePlayerCommands(
                     MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS
                         .buildUpon()
-                        .remove(COMMAND_SEEK_TO_NEXT)
-                        .remove(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
-                        .remove(COMMAND_SEEK_TO_PREVIOUS)
-                        .remove(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+//                        .remove(COMMAND_SEEK_TO_NEXT)
+//                        .remove(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+//                        .remove(COMMAND_SEEK_TO_PREVIOUS)
+//                        .remove(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
                         .build()
                 )
                 .setAvailableSessionCommands(

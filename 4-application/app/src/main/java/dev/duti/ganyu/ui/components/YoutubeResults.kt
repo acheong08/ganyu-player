@@ -67,6 +67,9 @@ fun MusicSearchResults(
                 border = if (ctx.songsMap.value.contains(video.videoId)) BorderStroke(
                     1.dp,
                     Color.Green
+                ) else if (ctx.downloading.contains(video)) BorderStroke(
+                    1.dp,
+                    Color.Red
                 ) else null
             ) {
                 Row(

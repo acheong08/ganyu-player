@@ -22,6 +22,7 @@ import dev.duti.ganyu.utils.saveYtDownload
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.util.Date
@@ -36,7 +37,7 @@ class MyAppContext(
     var songs = mutableStateOf<List<SongWithDetails>>(listOf())
 
     val songsMap = derivedStateOf {
-        songs.value.associate { it.id to it }
+        songs.value.associate { it.id to true }
     }
 
     var currentSong = mutableStateOf<SongWithDetails?>(null)
@@ -52,20 +53,13 @@ class MyAppContext(
 
     init {
         player.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_ENDED) {
-                    val nextIdx = nextSongIdx()
-                    if (nextIdx == -1) {
-                        return
-                    }
-                    play(nextIdx)
-                }
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                super.onMediaItemTransition(mediaItem, reason)
+                currentSong.value = songs.value[player.currentMediaItemIndex]
             }
         })
 
-        scope.launch {
-            songs.value = getLocalMediaFiles(ctx)
-        }
+        refreshSongList()
         scope.launch {
             val ivCookieString = settingsRepository.getCookie()
             if (ivCookieString == null) {
@@ -81,6 +75,7 @@ class MyAppContext(
             YoutubeApiClient.setCookies(ivCookieString)
             ivIsLoggedIn.value = true
         }
+
     }
 
     suspend fun ivLogin(cookie: String) {
@@ -92,33 +87,47 @@ class MyAppContext(
     fun refreshSongList() {
         scope.launch {
             songs.value = getLocalMediaFiles(ctx)
+            withContext(Dispatchers.Main) {
+                val mediaItems = songs.value.map { song ->
+                    MediaItem.Builder().setUri(
+                        ContentUris.withAppendedId(
+                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path
+                        )
+                    ).setMediaMetadata(
+                        MediaMetadata.Builder().setTitle(song.title)
+                            .setArtist(song.artist).build()
+                    ).build()
+                }
+                player.setMediaItems(mediaItems)
+                player.prepare()
+            }
         }
-    }
-
-    fun nextSongIdx(): Int {
-        // TODO: Get settings for different options (e.g. Random, loop)
-        return (currentSongIndex.intValue + 1) % songs.value.size
     }
 
     fun play(idx: Int) {
         currentSong.value = songs.value[idx]
         currentSongIndex.intValue = idx
-        // Get URI via id
-        val uri = ContentUris.withAppendedId(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentSong.value!!.path
-        )
-        player.setMediaItem(
-            MediaItem.Builder().setUri(uri).setMediaMetadata(
-                MediaMetadata.Builder().setTitle(currentSong.value!!.title)
-                    .setArtist(currentSong.value!!.artist).build()
-            ).build()
-        )
-        player.prepare()
+        player.seekTo(idx, 0L)
         player.play()
     }
 
+    fun playPrev() {
+        var newIndex = player.currentMediaItemIndex - 1
+        if (newIndex == -1) {
+            newIndex = player.mediaItemCount - 1
+        }
+        Log.i(TAG, "Playing index: $newIndex with max ${player.mediaItemCount}")
+        player.seekTo(newIndex, 0)
+    }
+
+    fun playNext() {
+        val newIndex = (player.currentMediaItemIndex + 1) % player.mediaItemCount
+        Log.i(TAG, "Playing index: $newIndex with max ${player.mediaItemCount}")
+        player.seekTo(newIndex, 0)
+    }
+
     fun download(video: ShortVideo) {
-        if (songsMap.value.contains(video.videoId)) {
+        if (songsMap.value.contains(video.videoId) || downloading.contains(video)) {
             Log.i(TAG, "Video already downloaded, skipping.")
             return
         }
