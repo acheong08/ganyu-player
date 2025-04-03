@@ -14,7 +14,11 @@ import java.io.File
 
 const val TAG = "FileStore"
 
-fun getLocalMediaFiles(ctx: Context): List<SongWithDetails> {
+fun getLocalMediaFiles(
+    ctx: Context,
+    artist: String? = null,
+    album: String? = null
+): List<SongWithDetails> {
     Log.i(TAG, "Start: Getting local media files")
     if (ContextCompat.checkSelfPermission(
             ctx,
@@ -35,10 +39,25 @@ fun getLocalMediaFiles(ctx: Context): List<SongWithDetails> {
         MediaStore.Audio.Media.GENRE
     )
     // Filter only music files with valid duration
-    val selection =
+    var selection =
         "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND " + "${MediaStore.Audio.Media.DURATION} >= 0"
+    val selectionArgs = mutableListOf<String>()
+
+    if (!artist.isNullOrBlank()) {
+        selection += " AND ${MediaStore.Audio.Media.ARTIST} = ?"
+        selectionArgs.add(artist)
+    }
+
+    if (!album.isNullOrBlank()) {
+        selection += " AND ${MediaStore.Audio.Media.ALBUM} = ?"
+        selectionArgs.add(album)
+    }
     ctx.contentResolver.query(
-        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection, selection, null, null
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        projection,
+        selection,
+        selectionArgs.toTypedArray(),
+        null
     )?.use { cursor ->
         val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
         val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
@@ -63,7 +82,32 @@ fun getLocalMediaFiles(ctx: Context): List<SongWithDetails> {
         }
     }
     return songs
+}
 
+fun getArtists(ctx: Context): List<Pair<String, Int>> {
+    val artistSongCounts = mutableMapOf<String, Int>()
+
+    val projection = arrayOf(
+        MediaStore.Audio.Media.ARTIST,
+        MediaStore.Audio.Media._ID
+    )
+
+    ctx.contentResolver.query(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        projection,
+        "${MediaStore.Audio.Media.IS_MUSIC} != 0",
+        null,
+        null
+    )?.use { cursor ->
+        val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+
+        while (cursor.moveToNext()) {
+            val artistName = cursor.getString(artistColumn) ?: "Unknown Artist"
+            artistSongCounts[artistName] = artistSongCounts.getOrDefault(artistName, 0) + 1
+        }
+    }
+
+    return artistSongCounts.entries.sortedByDescending { it.value }.map { Pair(it.key, it.value) }
 }
 
 fun saveYtDownload(ctx: Context, ytDownload: PyYtDownload) {

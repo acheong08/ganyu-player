@@ -80,7 +80,7 @@ fun MainView(ctx: MyAppContext) {
             )
             when (screen) {
                 Screens.SONGS -> {
-                    MusicPlayerScreen(ctx, modifier = modifier)
+                    MusicPlayerScreen(ctx.songs.value, ctx, modifier = modifier)
                 }
 
                 Screens.SEARCH -> {
@@ -89,7 +89,12 @@ fun MainView(ctx: MyAppContext) {
 
                 Screens.DOWNLOADING -> {
                     Column(modifier = modifier) {
-                        MusicSearchResults(ctx, ctx.downloading, {}, modifier = Modifier.fillMaxSize())
+                        MusicSearchResults(
+                            ctx,
+                            ctx.downloading,
+                            {},
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                 }
 

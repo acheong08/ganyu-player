@@ -10,13 +10,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.media3.common.util.UnstableApi
 import dev.duti.ganyu.MyAppContext
+import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.ui.components.CurrentSongDisplay
 import dev.duti.ganyu.ui.components.SongList
 import kotlinx.coroutines.launch
 
 @UnstableApi
 @Composable
-fun MusicPlayerScreen(ctx: MyAppContext, modifier: Modifier) {
+fun MusicPlayerScreen(songs: List<SongWithDetails>, ctx: MyAppContext, modifier: Modifier) {
 
     ctx.refreshSongList()
 
@@ -25,7 +26,7 @@ fun MusicPlayerScreen(ctx: MyAppContext, modifier: Modifier) {
     Scaffold(modifier = modifier) { padding ->
         Box(modifier = Modifier.Companion.fillMaxSize()) {
             Column(modifier = Modifier.Companion.fillMaxSize()) {
-                SongList(ctx.songs.value, ctx, padding) { idx, fullSong ->
+                SongList(songs, ctx, padding) { idx, fullSong ->
                     scope.launch { ctx.play(idx) }
                 }
             }
