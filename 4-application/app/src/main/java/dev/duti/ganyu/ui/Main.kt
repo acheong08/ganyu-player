@@ -1,5 +1,6 @@
 package dev.duti.ganyu.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -28,10 +29,13 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import dev.duti.ganyu.MyAppContext
+import dev.duti.ganyu.data.SongWithDetails
+import dev.duti.ganyu.ui.components.ArtistList
 import dev.duti.ganyu.ui.components.MusicSearchResults
 import dev.duti.ganyu.ui.components.YoutubeSearchScreen
 import dev.duti.ganyu.ui.screens.MusicPlayerScreen
 import dev.duti.ganyu.ui.screens.YoutubeSubscriptions
+import dev.duti.ganyu.utils.getArtists
 import kotlinx.coroutines.launch
 
 @UnstableApi
@@ -70,7 +74,7 @@ fun MainView(ctx: MyAppContext) {
             val modifier = Modifier.padding(
                 PaddingValues(
                     top = maxOf(
-                        innerPadding.calculateTopPadding() - 8.dp,
+                        innerPadding.calculateTopPadding() - 7.dp,
                         0.dp
                     ), // Reduce top padding
                     bottom = innerPadding.calculateBottomPadding(),
@@ -80,7 +84,35 @@ fun MainView(ctx: MyAppContext) {
             )
             when (screen) {
                 Screens.SONGS -> {
-                    MusicPlayerScreen(ctx.songs.value, ctx, modifier = modifier)
+                    ctx.songFilterFunc.value = { true }
+                    MusicPlayerScreen(ctx, modifier = modifier)
+                }
+
+                Screens.ARTISTS -> {
+
+                    // Track the selected artist with remember
+                    var selectedArtist by remember { mutableStateOf<String?>(null) }
+                    BackHandler(enabled = selectedArtist != null) {
+                        // Handle back press when in artist detail view
+                        selectedArtist = null
+                    }
+                    if (selectedArtist == null) {
+                        // Show artist list if no artist is selected
+                        ArtistList(
+                            artists = getArtists(ctx.ctx),
+                            onArtistClick = { artist ->
+                                // Set the song filter and mark the artist as selected
+                                ctx.songFilterFunc.value = { song: SongWithDetails ->
+                                    song.artist == artist
+                                }
+                                selectedArtist = artist
+                            },
+                            modifier = modifier
+                        )
+                    } else {
+                        // Show music player when an artist is selected
+                        MusicPlayerScreen(ctx, modifier = modifier)
+                    }
                 }
 
                 Screens.SEARCH -> {

@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 
 enum class Screens {
     SONGS,
+    ARTISTS,
     SUBSCRIPTIONS,
     SEARCH,
     DOWNLOADING

@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 @UnstableApi
 @Composable
-fun MusicPlayerScreen(songs: List<SongWithDetails>, ctx: MyAppContext, modifier: Modifier) {
+fun MusicPlayerScreen(ctx: MyAppContext, modifier: Modifier) {
 
     ctx.refreshSongList()
 
@@ -26,7 +26,7 @@ fun MusicPlayerScreen(songs: List<SongWithDetails>, ctx: MyAppContext, modifier:
     Scaffold(modifier = modifier) { padding ->
         Box(modifier = Modifier.Companion.fillMaxSize()) {
             Column(modifier = Modifier.Companion.fillMaxSize()) {
-                SongList(songs, ctx, padding) { idx, fullSong ->
+                SongList(ctx.filteredSongs.value, ctx, padding) { idx, fullSong ->
                     scope.launch { ctx.play(idx) }
                 }
             }

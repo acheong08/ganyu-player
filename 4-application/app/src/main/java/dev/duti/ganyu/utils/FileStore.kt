@@ -16,8 +16,6 @@ const val TAG = "FileStore"
 
 fun getLocalMediaFiles(
     ctx: Context,
-    artist: String? = null,
-    album: String? = null
 ): List<SongWithDetails> {
     Log.i(TAG, "Start: Getting local media files")
     if (ContextCompat.checkSelfPermission(
@@ -41,22 +39,12 @@ fun getLocalMediaFiles(
     // Filter only music files with valid duration
     var selection =
         "${MediaStore.Audio.Media.IS_MUSIC} != 0 AND " + "${MediaStore.Audio.Media.DURATION} >= 0"
-    val selectionArgs = mutableListOf<String>()
 
-    if (!artist.isNullOrBlank()) {
-        selection += " AND ${MediaStore.Audio.Media.ARTIST} = ?"
-        selectionArgs.add(artist)
-    }
-
-    if (!album.isNullOrBlank()) {
-        selection += " AND ${MediaStore.Audio.Media.ALBUM} = ?"
-        selectionArgs.add(album)
-    }
     ctx.contentResolver.query(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
         projection,
         selection,
-        selectionArgs.toTypedArray(),
+        null,
         null
     )?.use { cursor ->
         val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)

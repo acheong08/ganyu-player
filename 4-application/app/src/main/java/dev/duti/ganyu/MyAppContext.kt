@@ -34,7 +34,14 @@ class MyAppContext(
     val player: MediaController,
     val settingsRepository: SettingsRepository
 ) {
-    var songs = mutableStateOf<List<SongWithDetails>>(listOf())
+    private var songs = mutableStateOf<List<SongWithDetails>>(listOf())
+    var songFilterFunc = mutableStateOf({ song: SongWithDetails -> true })
+    private var songSortComparator = mutableStateOf({ song: SongWithDetails -> song.title })
+    var filteredSongs = derivedStateOf {
+        songs.value.filter { songFilterFunc.value(it) }.sortedBy {
+            songSortComparator.value(it)
+        }
+    }
 
     val songsMap = derivedStateOf {
         songs.value.associate { it.id to true }
