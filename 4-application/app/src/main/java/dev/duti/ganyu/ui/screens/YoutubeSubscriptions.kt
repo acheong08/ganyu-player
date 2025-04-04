@@ -1,5 +1,6 @@
 package dev.duti.ganyu.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -46,11 +47,12 @@ fun YoutubeSubscriptions(ctx: MyAppContext, modifier: Modifier) {
 
     Column(modifier = modifier) {
         if (ctx.ivIsLoggedIn.value) {
-
             LaunchedEffect(ctx.ivIsLoggedIn.value, currentPage) {
+                Log.i("SUBSCRIPTIONS", "Fetching page $currentPage")
                 scope.launch {
                     val newVideos = YoutubeApiClient.getSubscriptions(page = currentPage)
                     subVideos = if (currentPage == 1) newVideos else subVideos + newVideos
+                    Log.i("SUBSCRIPTIONS", "Found ${subVideos.size} videos")
                 }
             }
             // Show subscriptions

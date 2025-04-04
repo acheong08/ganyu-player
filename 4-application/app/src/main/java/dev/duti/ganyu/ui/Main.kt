@@ -1,6 +1,5 @@
 package dev.duti.ganyu.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -19,10 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -31,11 +28,11 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import dev.duti.ganyu.MyAppContext
-import dev.duti.ganyu.data.SongWithDetails
-import dev.duti.ganyu.ui.components.CategoryList
 import dev.duti.ganyu.ui.components.MusicSearchResults
 import dev.duti.ganyu.ui.components.YoutubeSearchScreen
+import dev.duti.ganyu.ui.screens.ArtistsScreen
 import dev.duti.ganyu.ui.screens.MusicPlayerScreen
+import dev.duti.ganyu.ui.screens.PlaylistsScreen
 import dev.duti.ganyu.ui.screens.YoutubeSubscriptions
 import dev.duti.ganyu.utils.getArtists
 import kotlinx.coroutines.launch
@@ -76,7 +73,7 @@ fun MainView(ctx: MyAppContext) {
             val modifier = Modifier.padding(
                 PaddingValues(
                     top = maxOf(
-                        innerPadding.calculateTopPadding() - 7.dp,
+                        innerPadding.calculateTopPadding() - 10.dp,
                         0.dp
                     ), // Reduce top padding
                     bottom = innerPadding.calculateBottomPadding(),
@@ -90,61 +87,13 @@ fun MainView(ctx: MyAppContext) {
                     MusicPlayerScreen(ctx, modifier = modifier)
                 }
 
-                Screens.ARTISTS, Screens.PLAYLISTS -> {
+                Screens.ARTISTS -> {
+                    ArtistsScreen(ctx, getArtists(ctx.ctx), modifier)
+                }
 
-                    // Track the selected artist with remember
-                    var selectedCat by remember { mutableStateOf<String?>(null) }
-                    BackHandler(enabled = selectedCat != null) {
-                        // Handle back press when in artist detail view
-                        selectedCat = null
-                    }
-                    if (selectedCat == null) {
-                        val categories = when (screen) {
-                            Screens.ARTISTS -> {
-                                val artists by remember { derivedStateOf { getArtists(ctx.ctx) } }
-                                artists
-                            }
+                Screens.PLAYLISTS -> {
+                    PlaylistsScreen(ctx, modifier)
 
-                            Screens.PLAYLISTS -> {
-                                val playlists by produceState<List<Pair<String, Int>>>(initialValue = emptyList()) {
-                                    // Assuming playlistRepository is accessible or passed as part of ctx
-                                    ctx.repo.allPlaylists().collect { playlistPairs ->
-                                        value = playlistPairs
-                                    }
-                                }
-                                playlists
-                            }
-
-                            else -> listOf()
-                        }
-                        // Show artist list if no artist is selected
-                        CategoryList(
-                            categories = categories,
-                            onClick = { cat ->
-                                if (screen == Screens.ARTISTS) {
-                                    // Set the song filter and mark the artist as selected
-                                    ctx.songFilterFunc.value = { song: SongWithDetails ->
-                                        song.artist == cat
-                                    }
-                                    selectedCat = cat
-                                } else {
-                                    scope.launch {
-                                        val songs = ctx.repo.getSongsInPlaylist(
-                                            ctx.repo.getPlaylistIdByName(cat)!!
-                                        )
-                                        ctx.songFilterFunc.value = { song ->
-                                            songs.contains(song.id)
-                                        }
-                                        selectedCat = cat
-                                    }
-                                }
-                            },
-                            modifier = modifier
-                        )
-                    } else {
-                        // Show music player when an artist is selected
-                        MusicPlayerScreen(ctx, modifier = modifier)
-                    }
                 }
 
 
