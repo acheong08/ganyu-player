@@ -36,7 +36,8 @@ data class VideoThumbnail(
 
 @Serializable
 data class YoutubeFeedResp(
-    val videos: List<ShortVideo>
+    val videos: List<ShortVideo>,
+    val notifications: List<ShortVideo>
 )
 
 
@@ -92,11 +93,16 @@ object YoutubeApiClient {
         if (cookies == null) {
             throw Exception("Invidious not authenticated. Remember to login")
         }
-        return apiService.getSubscriptions(
+        val resp = apiService.getSubscriptions(
             cookies!!,
             maxResults,
             page
-        ).videos.filter { vid -> filterLenNotZero(vid) }
+        )
+        return resp.notifications.filter { filterLenNotZero(it) } + resp.videos.filter {
+            filterLenNotZero(
+                it
+            )
+        }
     }
 
     fun setCookies(cookie: String) {
