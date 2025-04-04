@@ -15,6 +15,8 @@ import androidx.media3.session.MediaController
 import dev.duti.ganyu.data.ShortVideo
 import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.data.YoutubeApiClient
+import dev.duti.ganyu.storage.PlaylistDatabase
+import dev.duti.ganyu.storage.PlaylistRepository
 import dev.duti.ganyu.storage.SettingsRepository
 import dev.duti.ganyu.utils.PyModule
 import dev.duti.ganyu.utils.getLocalMediaFiles
@@ -57,6 +59,9 @@ class MyAppContext(
     private val failedDownloads = mutableStateListOf<ShortVideo>()
 
     val scope = CoroutineScope(Dispatchers.IO)
+
+    private val db: PlaylistDatabase = PlaylistDatabase.getDatabase(ctx)
+    val repo = PlaylistRepository(db.playlistDao())
 
     init {
         player.addListener(object : Player.Listener {
@@ -150,6 +155,11 @@ class MyAppContext(
         } finally {
             downloading.remove(video)
         }
+    }
+
+
+    fun destroy() {
+        db.close()
     }
 
 }

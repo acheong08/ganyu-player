@@ -19,9 +19,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ArtistList(
-    artists: List<Pair<String, Int>>,
-    onArtistClick: (String) -> Unit,  // Callback when artist is clicked
+fun CategoryList(
+    categories: List<Pair<String, Int>>,
+    onClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier) { padding ->
@@ -31,11 +31,11 @@ fun ArtistList(
                 .padding(padding),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(artists) { artist ->
-                ArtistItem(
-                    name = artist.first,
-                    trackCount = artist.second,
-                    onClick = { onArtistClick(artist.first) }  // Pass click to parent
+            items(categories) { cat ->
+                CategoryItem(
+                    name = cat.first,
+                    trackCount = cat.second,
+                    onClick = { onClick(cat.first) }  // Pass click to parent
                 )
             }
         }
@@ -43,7 +43,7 @@ fun ArtistList(
 }
 
 @Composable
-fun ArtistItem(
+fun CategoryItem(
     name: String,
     trackCount: Int,
     onClick: () -> Unit,  // Click handler
@@ -78,9 +78,9 @@ fun ArtistListPreview() {
     )
 
     MaterialTheme {
-        ArtistList(
-            artists = sampleArtists,
-            onArtistClick = { artistName ->
+        CategoryList(
+            categories = sampleArtists,
+            onClick = { artistName ->
                 println("Artist clicked: $artistName")
                 // Handle click (e.g., navigate to detail screen)
             }

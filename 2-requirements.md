@@ -14,6 +14,7 @@ The application should match the music playing functionality of VLC, including b
 
 - Full song list with title and artist
 - Artists list with name and number of tracks
+- Ability to create, modify, and delete playlists
 - A sticky banner with the currently playing song as well as basic controls
 - Android media integration for media control on lock screen
 

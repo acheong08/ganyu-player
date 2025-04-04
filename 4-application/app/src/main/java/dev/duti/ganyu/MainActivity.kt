@@ -74,6 +74,7 @@ class MainActivity : ComponentActivity(), PermissionRequestCallback {
 
     override fun onDestroy() {
         MediaController.releaseFuture(controllerFuture)
+        myAppCtx.destroy()
         super.onDestroy()
     }
 }
