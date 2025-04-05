@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CategoryList(
-    categories: List<Pair<String, Int>>,
-    onClick: (String) -> Unit,
+    categories: List<Triple<Long, String, Int>>,
+    onClick: (Triple<Long, String, Int>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier) { padding ->
@@ -33,9 +33,9 @@ fun CategoryList(
         ) {
             items(categories) { cat ->
                 CategoryItem(
-                    name = cat.first,
-                    trackCount = cat.second,
-                    onClick = { onClick(cat.first) }  // Pass click to parent
+                    name = cat.second,
+                    trackCount = cat.third,
+                    onClick = { onClick(cat) }  // Pass click to parent
                 )
             }
         }
@@ -72,9 +72,9 @@ fun CategoryItem(
 @Composable
 fun ArtistListPreview() {
     val sampleArtists = listOf(
-        "The Beatles" to 213,
-        "Pink Floyd" to 165,
-        "Led Zeppelin" to 87
+        Triple(0L, "The Beatles", 213),
+        Triple(0L, "Pink Floyd", 122),
+        Triple(0L, "Ado", 100),
     )
 
     MaterialTheme {

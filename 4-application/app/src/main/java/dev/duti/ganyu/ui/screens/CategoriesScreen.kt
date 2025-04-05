@@ -29,21 +29,21 @@ import kotlinx.coroutines.launch
 @Composable
 fun ArtistsScreen(ctx: MyAppContext, artists: List<Pair<String, Int>>, modifier: Modifier) {
     // Track the selected artist with remember
-    var selectedCat by remember { mutableStateOf<String?>(null) }
-    BackHandler(enabled = selectedCat != null) {
+    var selectedCat by remember { mutableStateOf(false) }
+    BackHandler(enabled = selectedCat) {
         // Handle back press when in artist detail view
-        selectedCat = null
+        selectedCat = false
     }
-    if (selectedCat == null) {
+    if (selectedCat) {
 
         // Show artist list if no artist is selected
         CategoryList(
-            categories = artists, onClick = { cat ->
+            categories = artists.map { Triple(0L, it.first, it.second) }, onClick = { cat ->
                 // Set the song filter and mark the artist as selected
                 ctx.songFilterFunc.value = { song: SongWithDetails ->
-                    song.artist == cat
+                    song.artist == cat.second
                 }
-                selectedCat = cat
+                selectedCat = true
 
             }, modifier = modifier
         )
@@ -56,16 +56,16 @@ fun ArtistsScreen(ctx: MyAppContext, artists: List<Pair<String, Int>>, modifier:
 @OptIn(UnstableApi::class)
 @Composable
 fun PlaylistsScreen(ctx: MyAppContext, modifier: Modifier) {
-    var selectedCat by remember { mutableStateOf<String?>(null) }
+    var selectedCat by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var playlistName by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
-    BackHandler(enabled = selectedCat != null) {
-        selectedCat = null
+    BackHandler(enabled = selectedCat) {
+        selectedCat = false
     }
 
-    if (selectedCat != null) {
+    if (selectedCat) {
         MusicPlayerScreen(ctx, modifier = modifier)
         return
     }
@@ -80,12 +80,12 @@ fun PlaylistsScreen(ctx: MyAppContext, modifier: Modifier) {
                 categories = categories.value, onClick = { cat ->
                     scope.launch {
                         val songs = ctx.repo.getSongsInPlaylist(
-                            ctx.repo.getPlaylistIdByName(cat)!!
+                            cat.first
                         )
                         ctx.songFilterFunc.value = { song ->
                             songs.contains(song.id)
                         }
-                        selectedCat = cat
+                        selectedCat = true
                     }
                 }, modifier = Modifier
                     .padding(padding)

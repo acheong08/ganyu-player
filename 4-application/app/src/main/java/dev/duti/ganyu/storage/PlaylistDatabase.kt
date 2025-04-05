@@ -43,6 +43,7 @@ data class SongPlaylistCrossRef(
 )
 
 data class PlaylistWithSongCount(
+    val id: Long,
     val name: String,
     val songCount: Int
 )
@@ -62,7 +63,7 @@ interface PlaylistDao {
 
     @Query(
         """
-    SELECT p.name, COUNT(ref.songId) as songCount
+    SELECT p.id, p.name, COUNT(ref.songId) as songCount
     FROM playlists p 
     LEFT JOIN song_playlist_cross_ref ref ON p.id = ref.playlistId
     GROUP BY p.id
@@ -122,9 +123,9 @@ abstract class PlaylistDatabase : RoomDatabase() {
 
 class PlaylistRepository(private val playlistDao: PlaylistDao) {
 
-    fun allPlaylists(): Flow<List<Pair<String, Int>>> {
+    fun allPlaylists(): Flow<List<Triple<Long, String, Int>>> {
         return playlistDao.getAllPlaylistsWithSongCount()
-            .map { it.map { Pair(it.name, it.songCount) } }
+            .map { it.map { Triple(it.id, it.name, it.songCount) } }
     }
 
     suspend fun getPlaylistIdByName(name: String) = playlistDao.getPlaylistIdByName(name)

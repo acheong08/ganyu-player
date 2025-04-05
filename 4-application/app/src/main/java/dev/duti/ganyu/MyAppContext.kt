@@ -8,6 +8,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -19,10 +20,12 @@ import dev.duti.ganyu.storage.PlaylistDatabase
 import dev.duti.ganyu.storage.PlaylistRepository
 import dev.duti.ganyu.storage.SettingsRepository
 import dev.duti.ganyu.utils.PyModule
+import dev.duti.ganyu.utils.deleteMediaFile
 import dev.duti.ganyu.utils.getLocalMediaFiles
 import dev.duti.ganyu.utils.saveYtDownload
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Cookie
@@ -88,6 +91,18 @@ class MyAppContext(
             ivIsLoggedIn.value = true
         }
 
+        scope.launch {
+            snapshotFlow { filteredSongs.value }
+                .distinctUntilChanged()
+                .collect { songs ->
+                    updateMediaItems(songs)
+                }
+        }
+    }
+
+    fun deleteSong(path: Long) {
+        deleteMediaFile(ctx, path)
+        songs.value = songs.value.filterNot { it.path == path }
     }
 
     suspend fun ivLogin(cookie: String) {
@@ -99,20 +114,6 @@ class MyAppContext(
     fun refreshSongList() {
         scope.launch {
             songs.value = getLocalMediaFiles(ctx)
-            withContext(Dispatchers.Main) {
-                val mediaItems = songs.value.map { song ->
-                    MediaItem.Builder().setUri(
-                        ContentUris.withAppendedId(
-                            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path
-                        )
-                    ).setMediaMetadata(
-                        MediaMetadata.Builder().setTitle(song.title)
-                            .setArtist(song.artist).build()
-                    ).build()
-                }
-                player.setMediaItems(mediaItems)
-                player.prepare()
-            }
         }
     }
 
@@ -160,6 +161,35 @@ class MyAppContext(
 
     fun destroy() {
         db.close()
+    }
+
+
+    private suspend fun updateMediaItems(songs: List<SongWithDetails>) {
+        withContext(Dispatchers.Main) {
+            val mediaItems = songs.map { song ->
+                MediaItem.Builder().setUri(
+                    ContentUris.withAppendedId(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path
+                    )
+                ).setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(song.title)
+                        .setArtist(song.artist)
+                        .build()
+                ).build()
+            }
+            player.setMediaItems(mediaItems)
+            // Keep playing the current song if it's still in the filtered list
+            currentSong.value?.let { current ->
+                val newIndex = songs.indexOfFirst { it.id == current.id }
+                if (newIndex != -1) {
+                    player.seekTo(newIndex, player.currentPosition)
+                    if (player.isPlaying) {
+                        player.play()
+                    }
+                }
+            }
+        }
     }
 
 }

@@ -1,9 +1,11 @@
 package dev.duti.ganyu.utils
 
 import android.Manifest
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
@@ -130,4 +132,44 @@ fun saveYtDownload(ctx: Context, ytDownload: PyYtDownload) {
 
 
     tempFile.delete()
+}
+
+fun deleteMediaFile(context: Context, mediaStoreId: Long): Boolean {
+    val contentResolver = context.contentResolver
+    val uri = ContentUris.withAppendedId(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        mediaStoreId
+    )
+
+    return try {
+        // Delete from MediaStore
+        val rowsDeleted = contentResolver.delete(uri, null, null)
+
+        // Double-check physical file deletion
+        if (rowsDeleted > 0) {
+            val file = File(getPathFromUri(context, uri))
+            if (file.exists()) {
+                file.delete()
+            }
+            true
+        } else {
+            false
+        }
+    } catch (e: SecurityException) {
+        false
+    } catch (e: Exception) {
+        false
+    }
+}
+
+// Helper to get file path from URI (if needed)
+private fun getPathFromUri(context: Context, uri: Uri): String {
+    val projection = arrayOf(MediaStore.Audio.Media.DATA)
+    val cursor = context.contentResolver.query(uri, projection, null, null, null)
+    cursor?.use {
+        if (it.moveToFirst()) {
+            return it.getString(it.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
+        }
+    }
+    return ""
 }
