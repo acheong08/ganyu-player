@@ -16,5 +16,4 @@ If I had more time, I would replace Lua scripting with Webassembly to support mo
 
 # References
 
-<https://www.jetbrains.com/compose-multiplatform/>
-
+Bianchi, A. (2024) Compose multiplatform: Paving the way for the future of cross-platform development, Medium. Available at: <https://medium.com/@xandebianchi/compose-multiplatform-paving-the-way-for-the-future-of-cross-platform-development-d5665e837f86> (Accessed: 06 April 2025).
