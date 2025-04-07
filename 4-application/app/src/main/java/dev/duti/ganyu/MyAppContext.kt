@@ -13,6 +13,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
+import com.dylibso.chicory.runtime.Store
+import com.dylibso.chicory.wasm.Parser
 import dev.duti.ganyu.data.ShortVideo
 import dev.duti.ganyu.data.SongWithDetails
 import dev.duti.ganyu.data.YoutubeApiClient
@@ -32,12 +34,11 @@ import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.util.Date
 
+
 const val TAG = "APP_CONTEXT"
 
 class MyAppContext(
-    val ctx: Context,
-    val player: MediaController,
-    val settingsRepository: SettingsRepository
+    val ctx: Context, val player: MediaController, val settingsRepository: SettingsRepository
 ) {
     private var songs = mutableStateOf<List<SongWithDetails>>(listOf())
     var songFilterFunc = mutableStateOf({ song: SongWithDetails -> true })
@@ -92,12 +93,21 @@ class MyAppContext(
         }
 
         scope.launch {
-            snapshotFlow { filteredSongs.value }
-                .distinctUntilChanged()
-                .collect { songs ->
-                    updateMediaItems(songs)
-                }
+            snapshotFlow { filteredSongs.value }.distinctUntilChanged().collect { songs ->
+                updateMediaItems(songs)
+            }
         }
+
+        // Experiment - WASM
+        val wasmHost = WasmHost(this)
+        val store = Store()
+        for (hostFuncs in wasmHost.toHostFunctions()) {
+            store.addFunction(hostFuncs)
+        }
+        val file = ctx.resources.openRawResource(R.raw.add)
+        val instance = store.instantiate("plugin", (Parser.parse(file)))
+        val add = instance.export("add")
+        Log.i(TAG, "Zig result: ${add.apply(1, 2)[0]}")
     }
 
     fun deleteSong(path: Long) {
@@ -172,10 +182,7 @@ class MyAppContext(
                         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path
                     )
                 ).setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle(song.title)
-                        .setArtist(song.artist)
-                        .build()
+                    MediaMetadata.Builder().setTitle(song.title).setArtist(song.artist).build()
                 ).build()
             }
             player.setMediaItems(mediaItems)

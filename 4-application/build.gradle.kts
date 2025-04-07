@@ -6,4 +6,5 @@ plugins {
     id("com.google.devtools.ksp") version "2.1.10-1.0.31" apply false
     id("com.chaquo.python") version "16.0.0" apply false
     kotlin("plugin.serialization") version "2.1.10"
+    kotlin("kapt") version "1.9.22"
 }

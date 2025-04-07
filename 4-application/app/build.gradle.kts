@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.chaquo.python")
     kotlin("plugin.serialization")
+    kotlin("kapt")
 }
 
 android {
@@ -86,8 +87,11 @@ dependencies {
     implementation(libs.coil.network)
     implementation(libs.converter.gson)
 
+    implementation(libs.chicory.runtime)
+    implementation(libs.chicory.annotations)
     implementation(libs.androidx.datastore.preferences)
     testImplementation(libs.kotlinx.coroutines.test)
 
     ksp(libs.androidx.room.compiler)
+    kapt(libs.chicory.processor)
 }

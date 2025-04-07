@@ -2,26 +2,26 @@
 agp = "8.9.1"
 coilCompose = "3.1.0"
 converterGson = "2.9.0"
-datastorePreferences = "1.1.3"
+datastorePreferences = "1.1.4"
 kotlin = "2.0.21"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-kotlinxCoroutinesTest = "1.7.3"
+kotlinxCoroutinesTest = "1.10.1"
 kotlinxSerializationJson = "1.8.0"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.0"
-composeBom = "2025.02.00"
+activityCompose = "1.10.1"
+composeBom = "2025.03.01"
 retrofit = "2.9.0"
 roomCommon = "2.6.1"
 roomKtx = "2.6.1"
 appcompat = "1.7.0"
-media3Exoplayer = "1.5.1"
-media3Ui = "1.5.1"
-media3Session = "1.5.1"
+media3Exoplayer = "1.6.0"
+media3Ui = "1.6.0"
+media3Session = "1.6.0"
 playServicesCastFramework = "22.0.0"
-jaudiotagger = "3.0.1"
+chicory = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +57,9 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 play-services-cast-framework = { group = "com.google.android.gms", name = "play-services-cast-framework", version.ref = "playServicesCastFramework" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+chicory-runtime = { module = "com.dylibso.chicory:runtime", version.ref = "chicory" }
+chicory-annotations = {module = "com.dylibso.chicory:host-module-annotations-experimental", version.ref = "chicory" }
+chicory-processor = {module = "com.dylibso.chicory:host-module-processor-experimental", version.ref = "chicory"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
