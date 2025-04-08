@@ -16,7 +16,8 @@ enum class Screens {
     PLAYLISTS,
     SUBSCRIPTIONS,
     SEARCH,
-    DOWNLOADING
+    DOWNLOADING,
+    PLUGINS
 }
 
 @Composable

@@ -61,6 +61,8 @@ class MyAppContext(
 
   val scope = CoroutineScope(Dispatchers.IO)
 
+  val plugins = Plugins()
+
   private val db: PlaylistDatabase = PlaylistDatabase.getDatabase(ctx)
   val repo = PlaylistRepository(db.playlistDao())
 
@@ -103,14 +105,11 @@ class MyAppContext(
     for (hostFuncs in wasmHost.toHostFunctions()) {
       store.addFunction(hostFuncs)
     }
-    val file = ctx.resources.openRawResource(R.raw.add)
+    val file = ctx.resources.openRawResource(R.raw.plugin_example)
     val instance = store.instantiate("plugin", (Parser.parse(file)))
-    val testing = instance.export("testing")
     val alloc = instance.export("alloc")
     wasmHost.setAlloc(alloc)
-//    scope.launch {
-//      Log.i(TAG, "Zig result: ${testing.apply(1, 2)[0]}")
-//    }
+    plugins.register("Download song of the day", instance.export("songOfTheDay"))
   }
 
   fun deleteSong(path: Long) {

@@ -44,3 +44,19 @@ class WasmHost(val appCtx: MyAppContext) {
         return WasmHost_ModuleFactory.toHostFunctions(this)
     }
 }
+
+class Plugins() {
+    private val pluginMap = HashMap<String, ExportFunction>()
+
+    fun register(name: String, func: ExportFunction) {
+        pluginMap[name] = func
+    }
+
+    fun list(): List<String> {
+        return pluginMap.keys.toList()
+    }
+
+    fun execute(name: String) {
+        pluginMap[name]?.apply()
+    }
+}

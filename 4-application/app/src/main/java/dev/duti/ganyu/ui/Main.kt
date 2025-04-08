@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,6 +36,7 @@ import dev.duti.ganyu.ui.screens.MusicPlayerScreen
 import dev.duti.ganyu.ui.screens.PlaylistsScreen
 import dev.duti.ganyu.ui.screens.YoutubeSubscriptions
 import dev.duti.ganyu.utils.getArtists
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @UnstableApi
@@ -114,6 +116,27 @@ fun MainView(ctx: MyAppContext) {
 
                 Screens.SUBSCRIPTIONS -> {
                     YoutubeSubscriptions(ctx, modifier)
+                }
+
+                Screens.PLUGINS -> {
+                    Scaffold(modifier = modifier) { padding ->
+                        val coroutineScope = rememberCoroutineScope()
+                        val pluginList = ctx.plugins.list()
+
+                        Column(modifier = Modifier
+                            .padding(padding)
+                            .fillMaxSize()) {
+                            pluginList.forEach { pluginName ->
+                                Button(onClick = {
+                                    coroutineScope.launch(Dispatchers.IO) {
+                                        ctx.plugins.execute(pluginName)
+                                    }
+                                }) {
+                                    Text(pluginName)
+                                }
+                            }
+                        }
+                    }
                 }
 
             }
