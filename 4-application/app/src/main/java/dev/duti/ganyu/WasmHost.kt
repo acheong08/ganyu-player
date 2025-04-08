@@ -22,7 +22,7 @@ class WasmHost(val appCtx: MyAppContext) {
     }
 
     @WasmExport
-    fun downloadById(memory: Memory, ptr: Int, len: Int) {
+    fun download(memory: Memory, ptr: Int, len: Int) {
         val videoId = memory.readString(ptr, len)
         appCtx.downloadById(videoId)
     }
