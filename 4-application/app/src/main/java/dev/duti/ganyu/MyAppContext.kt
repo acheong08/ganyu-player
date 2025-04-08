@@ -70,6 +70,7 @@ class MyAppContext(
           override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
             currentSong.value = songs.value[player.currentMediaItemIndex]
+            Log.i(TAG, "Current song updated to index ${player.currentMediaItemIndex}")
           }
         })
 
@@ -107,9 +108,9 @@ class MyAppContext(
     val testing = instance.export("testing")
     val alloc = instance.export("alloc")
     wasmHost.setAlloc(alloc)
-    scope.launch {
-      Log.i(TAG, "Zig result: ${testing.apply(1, 2)[0]}")
-    }
+//    scope.launch {
+//      Log.i(TAG, "Zig result: ${testing.apply(1, 2)[0]}")
+//    }
   }
 
   fun deleteSong(path: Long) {
@@ -128,7 +129,7 @@ class MyAppContext(
   }
 
   fun play(idx: Int) {
-    currentSong.value = songs.value[idx]
+    currentSong.value = filteredSongs.value[idx]
     currentSongIndex.intValue = idx
     player.seekTo(idx, 0L)
     player.play()
