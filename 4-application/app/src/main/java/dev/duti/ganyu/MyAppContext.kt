@@ -25,6 +25,7 @@ import dev.duti.ganyu.utils.PyModule
 import dev.duti.ganyu.utils.deleteMediaFile
 import dev.duti.ganyu.utils.getLocalMediaFiles
 import dev.duti.ganyu.utils.saveYtDownload
+import java.util.Date
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -32,171 +33,172 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Cookie
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import java.util.Date
-
 
 const val TAG = "APP_CONTEXT"
 
 class MyAppContext(
-    val ctx: Context, val player: MediaController, val settingsRepository: SettingsRepository
+    val ctx: Context,
+    val player: MediaController,
+    val settingsRepository: SettingsRepository
 ) {
-    private var songs = mutableStateOf<List<SongWithDetails>>(listOf())
-    var songFilterFunc = mutableStateOf({ song: SongWithDetails -> true })
-    private var songSortComparator = mutableStateOf({ song: SongWithDetails -> song.title })
-    var filteredSongs = derivedStateOf {
-        songs.value.filter { songFilterFunc.value(it) }.sortedBy {
-            songSortComparator.value(it)
-        }
-    }
+  private var songs = mutableStateOf<List<SongWithDetails>>(listOf())
+  var songFilterFunc = mutableStateOf({ song: SongWithDetails -> true })
+  private var songSortComparator = mutableStateOf({ song: SongWithDetails -> song.title })
+  var filteredSongs = derivedStateOf {
+    songs.value.filter { songFilterFunc.value(it) }.sortedBy { songSortComparator.value(it) }
+  }
 
-    val songsMap = derivedStateOf {
-        songs.value.associate { it.id to true }
-    }
+  val songsMap = derivedStateOf { songs.value.associate { it.id to true } }
 
-    var currentSong = mutableStateOf<SongWithDetails?>(null)
-    private var currentSongIndex = mutableIntStateOf(0)
-    private val pyModule = PyModule(ctx)
+  var currentSong = mutableStateOf<SongWithDetails?>(null)
+  private var currentSongIndex = mutableIntStateOf(0)
+  private val pyModule = PyModule(ctx)
 
-    var ivIsLoggedIn = mutableStateOf(false)
+  var ivIsLoggedIn = mutableStateOf(false)
 
-    val downloading = mutableStateListOf<ShortVideo>()
-    private val failedDownloads = mutableStateListOf<ShortVideo>()
+  val downloading = mutableStateListOf<ShortVideo>()
+  private val failedDownloads = mutableStateListOf<ShortVideo>()
 
-    val scope = CoroutineScope(Dispatchers.IO)
+  val scope = CoroutineScope(Dispatchers.IO)
 
-    private val db: PlaylistDatabase = PlaylistDatabase.getDatabase(ctx)
-    val repo = PlaylistRepository(db.playlistDao())
+  private val db: PlaylistDatabase = PlaylistDatabase.getDatabase(ctx)
+  val repo = PlaylistRepository(db.playlistDao())
 
-    init {
-        player.addListener(object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                super.onMediaItemTransition(mediaItem, reason)
-                currentSong.value = songs.value[player.currentMediaItemIndex]
-            }
+  init {
+    player.addListener(
+        object : Player.Listener {
+          override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            super.onMediaItemTransition(mediaItem, reason)
+            currentSong.value = songs.value[player.currentMediaItemIndex]
+          }
         })
 
-        refreshSongList()
-        scope.launch {
-            val ivCookieString = settingsRepository.getCookie()
-            if (ivCookieString == null) {
-                return@launch
-            }
-            Log.i(TAG, "Invidious cookies loaded from memory")
-            val cookie = Cookie.parse("https://iv.duti.dev".toHttpUrl(), ivCookieString)
-            if (cookie == null || cookie.expiresAt < Date().time) {
-                Log.i(TAG, "Invidious cookie expired")
-                settingsRepository.deleteCookie()
-                return@launch
-            }
-            YoutubeApiClient.setCookies(ivCookieString)
-            ivIsLoggedIn.value = true
-        }
-
-        scope.launch {
-            snapshotFlow { filteredSongs.value }.distinctUntilChanged().collect { songs ->
-                updateMediaItems(songs)
-            }
-        }
-
-        // Experiment - WASM
-        val wasmHost = WasmHost(this)
-        val store = Store()
-        for (hostFuncs in wasmHost.toHostFunctions()) {
-            store.addFunction(hostFuncs)
-        }
-        val file = ctx.resources.openRawResource(R.raw.add)
-        val instance = store.instantiate("plugin", (Parser.parse(file)))
-        val add = instance.export("add")
-        Log.i(TAG, "Zig result: ${add.apply(1, 2)[0]}")
+    refreshSongList()
+    scope.launch {
+      val ivCookieString = settingsRepository.getCookie()
+      if (ivCookieString == null) {
+        return@launch
+      }
+      Log.i(TAG, "Invidious cookies loaded from memory")
+      val cookie = Cookie.parse("https://iv.duti.dev".toHttpUrl(), ivCookieString)
+      if (cookie == null || cookie.expiresAt < Date().time) {
+        Log.i(TAG, "Invidious cookie expired")
+        settingsRepository.deleteCookie()
+        return@launch
+      }
+      YoutubeApiClient.setCookies(ivCookieString)
+      ivIsLoggedIn.value = true
     }
 
-    fun deleteSong(path: Long) {
-        deleteMediaFile(ctx, path)
-        songs.value = songs.value.filterNot { it.path == path }
+    scope.launch {
+      snapshotFlow { filteredSongs.value }
+          .distinctUntilChanged()
+          .collect { songs -> updateMediaItems(songs) }
     }
 
-    suspend fun ivLogin(cookie: String) {
-        YoutubeApiClient.setCookies(cookie)
-        ivIsLoggedIn.value = true
-        settingsRepository.saveIvCookie(cookie)
+    // Experiment - WASM
+    val wasmHost = WasmHost(this)
+    val store = Store()
+    for (hostFuncs in wasmHost.toHostFunctions()) {
+      store.addFunction(hostFuncs)
     }
-
-    fun refreshSongList() {
-        scope.launch {
-            songs.value = getLocalMediaFiles(ctx)
-        }
+    val file = ctx.resources.openRawResource(R.raw.add)
+    val instance = store.instantiate("plugin", (Parser.parse(file)))
+    val testing = instance.export("testing")
+    val alloc = instance.export("alloc")
+    wasmHost.setAlloc(alloc)
+    scope.launch {
+      Log.i(TAG, "Zig result: ${testing.apply(1, 2)[0]}")
     }
+  }
 
-    fun play(idx: Int) {
-        currentSong.value = songs.value[idx]
-        currentSongIndex.intValue = idx
-        player.seekTo(idx, 0L)
-        player.play()
+  fun deleteSong(path: Long) {
+    deleteMediaFile(ctx, path)
+    songs.value = songs.value.filterNot { it.path == path }
+  }
+
+  suspend fun ivLogin(cookie: String) {
+    YoutubeApiClient.setCookies(cookie)
+    ivIsLoggedIn.value = true
+    settingsRepository.saveIvCookie(cookie)
+  }
+
+  fun refreshSongList() {
+    scope.launch { songs.value = getLocalMediaFiles(ctx) }
+  }
+
+  fun play(idx: Int) {
+    currentSong.value = songs.value[idx]
+    currentSongIndex.intValue = idx
+    player.seekTo(idx, 0L)
+    player.play()
+  }
+
+  fun playPrev() {
+    var newIndex = player.currentMediaItemIndex - 1
+    if (newIndex == -1) {
+      newIndex = player.mediaItemCount - 1
     }
+    Log.i(TAG, "Playing index: $newIndex with max ${player.mediaItemCount}")
+    player.seekTo(newIndex, 0)
+  }
 
-    fun playPrev() {
-        var newIndex = player.currentMediaItemIndex - 1
-        if (newIndex == -1) {
-            newIndex = player.mediaItemCount - 1
-        }
-        Log.i(TAG, "Playing index: $newIndex with max ${player.mediaItemCount}")
-        player.seekTo(newIndex, 0)
+  fun playNext() {
+    val newIndex = (player.currentMediaItemIndex + 1) % player.mediaItemCount
+    Log.i(TAG, "Playing index: $newIndex with max ${player.mediaItemCount}")
+    player.seekTo(newIndex, 0)
+  }
+
+  fun downloadById(video: String) {
+    val ytDownload = pyModule.download(video)
+    saveYtDownload(ctx, ytDownload)
+  }
+
+  fun download(video: ShortVideo) {
+    if (songsMap.value.contains(video.videoId) || downloading.contains(video)) {
+      Log.i(TAG, "Video already downloaded, skipping.")
+      return
     }
-
-    fun playNext() {
-        val newIndex = (player.currentMediaItemIndex + 1) % player.mediaItemCount
-        Log.i(TAG, "Playing index: $newIndex with max ${player.mediaItemCount}")
-        player.seekTo(newIndex, 0)
+    Log.i(TAG, "Youtube download started")
+    // Add to download queue
+    downloading.add(video)
+    try {
+      downloadById(video.videoId)
+    } catch (e: Exception) {
+      Log.e(TAG, "Youtube download failed: ${e.toString()}")
+      failedDownloads.add(video)
+    } finally {
+      downloading.remove(video)
     }
+  }
 
-    fun download(video: ShortVideo) {
-        if (songsMap.value.contains(video.videoId) || downloading.contains(video)) {
-            Log.i(TAG, "Video already downloaded, skipping.")
-            return
-        }
-        Log.i(TAG, "Youtube download started")
-        // Add to download queue
-        downloading.add(video)
-        try {
-            val ytDownload = pyModule.download(video.videoId)
-            saveYtDownload(ctx, ytDownload)
-        } catch (e: Exception) {
-            Log.e(TAG, "Youtube download failed: ${e.toString()}")
-            failedDownloads.add(video)
-        } finally {
-            downloading.remove(video)
-        }
-    }
+  fun destroy() {
+    db.close()
+  }
 
-
-    fun destroy() {
-        db.close()
-    }
-
-
-    private suspend fun updateMediaItems(songs: List<SongWithDetails>) {
-        withContext(Dispatchers.Main) {
-            val mediaItems = songs.map { song ->
-                MediaItem.Builder().setUri(
+  private suspend fun updateMediaItems(songs: List<SongWithDetails>) {
+    withContext(Dispatchers.Main) {
+      val mediaItems =
+          songs.map { song ->
+            MediaItem.Builder()
+                .setUri(
                     ContentUris.withAppendedId(
-                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path
-                    )
-                ).setMediaMetadata(
-                    MediaMetadata.Builder().setTitle(song.title).setArtist(song.artist).build()
-                ).build()
-            }
-            player.setMediaItems(mediaItems)
-            // Keep playing the current song if it's still in the filtered list
-            currentSong.value?.let { current ->
-                val newIndex = songs.indexOfFirst { it.id == current.id }
-                if (newIndex != -1) {
-                    player.seekTo(newIndex, player.currentPosition)
-                    if (player.isPlaying) {
-                        player.play()
-                    }
-                }
-            }
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.path))
+                .setMediaMetadata(
+                    MediaMetadata.Builder().setTitle(song.title).setArtist(song.artist).build())
+                .build()
+          }
+      player.setMediaItems(mediaItems)
+      // Keep playing the current song if it's still in the filtered list
+      currentSong.value?.let { current ->
+        val newIndex = songs.indexOfFirst { it.id == current.id }
+        if (newIndex != -1) {
+          player.seekTo(newIndex, player.currentPosition)
+          if (player.isPlaying) {
+            player.play()
+          }
         }
+      }
     }
-
+  }
 }
