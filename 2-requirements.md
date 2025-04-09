@@ -28,7 +28,7 @@ The application should match the music playing functionality of VLC, including b
 
 - The user should be able to import spotify playlists by providing a link
 
-### Lua-based plugins for customization
+### Webassembly plugins for customization
 
 - The application should provide hooks in different areas of the interface and service to allow customization
 - Plugins should contain a manifest to inform the application when to make a callback or display custom buttons and text
