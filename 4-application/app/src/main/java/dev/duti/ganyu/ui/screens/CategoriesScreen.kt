@@ -34,7 +34,7 @@ fun ArtistsScreen(ctx: MyAppContext, artists: List<Pair<String, Int>>, modifier:
         // Handle back press when in artist detail view
         selectedCat = false
     }
-    if (selectedCat) {
+    if (!selectedCat) {
 
         // Show artist list if no artist is selected
         CategoryList(
