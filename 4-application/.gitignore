@@ -1,5 +1,4 @@
 *.iml
-*.wasm
 *.wasm.o
 venv
 *.db
