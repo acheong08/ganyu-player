@@ -71,7 +71,7 @@ class MyAppContext(
         object : Player.Listener {
           override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
-            currentSong.value = songs.value[player.currentMediaItemIndex]
+            currentSong.value = filteredSongs.value[player.currentMediaItemIndex]
             Log.i(TAG, "Current song updated to index ${player.currentMediaItemIndex}")
           }
         })
